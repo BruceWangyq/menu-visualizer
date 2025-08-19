@@ -2,20 +2,56 @@
 //  ContentView.swift
 //  Menu Visualizer
 //
-//  Created by wang yuqiu on 2025-08-19.
+//  Main app entry point with privacy-first architecture
 //
 
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var coordinator = AppCoordinator()
+    @StateObject private var pipeline = MenuProcessingPipeline()
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        AppNavigationView()
+            .environmentObject(coordinator)
+            .environmentObject(pipeline)
+            .onAppear {
+                setupInitialState()
+            }
+            .onChange(of: pipeline.processingState) { _, newState in
+                handleProcessingStateChange(newState)
+            }
+    }
+    
+    // MARK: - Setup Methods
+    
+    private func setupInitialState() {
+        if !hasSeenOnboarding {
+            coordinator.updateState(.onboarding)
+            coordinator.navigate(to: .onboarding)
+        } else {
+            coordinator.updateState(.idle)
         }
-        .padding()
+    }
+    
+    private func handleProcessingStateChange(_ state: ProcessingState) {
+        switch state {
+        case .idle:
+            coordinator.updateState(.idle)
+        case .processingOCR, .parsingMenu, .generatingVisualization:
+            coordinator.updateState(.processing)
+        case .completed:
+            coordinator.updateState(.viewing)
+            if let menu = pipeline.currentMenu {
+                coordinator.navigate(to: .dishList(menu: menu))
+            }
+        case .error(let error):
+            coordinator.updateState(.error(error))
+            coordinator.handleError(error)
+        default:
+            break
+        }
     }
 }
 
