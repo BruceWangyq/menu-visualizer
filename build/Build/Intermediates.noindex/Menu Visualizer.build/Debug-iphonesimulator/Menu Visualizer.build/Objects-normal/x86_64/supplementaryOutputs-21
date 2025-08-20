@@ -1,0 +1,18 @@
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Views/PrivacyDashboard.swift":
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/PrivacyDashboard.o"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/PrivacyDashboard.dia"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/PrivacyDashboard.swiftconstvalues"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/PrivacyDashboard.swiftdeps"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/PrivacyDashboard.d"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Examples/OCRUsageExample.swift":
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/OCRUsageExample.d"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/OCRUsageExample.o"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/OCRUsageExample.dia"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/OCRUsageExample.swiftdeps"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/OCRUsageExample.swiftconstvalues"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Views/OnboardingView.swift":
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/OnboardingView.swiftdeps"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/OnboardingView.dia"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/OnboardingView.d"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/OnboardingView.o"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/OnboardingView.swiftconstvalues"

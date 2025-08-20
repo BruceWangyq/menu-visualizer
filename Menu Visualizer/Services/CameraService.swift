@@ -61,7 +61,7 @@ final class CameraService: NSObject, ObservableObject {
     
     func setupCaptureSession() -> Result<AVCaptureSession, MenulyError> {
         guard isCameraAvailable else {
-            return .failure(.cameraNotAvailable)
+            return .failure(.cameraUnavailable)
         }
         
         guard isAuthorized else {
@@ -76,7 +76,7 @@ final class CameraService: NSObject, ObservableObject {
             
             // Add camera input
             guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
-                return .failure(.cameraNotAvailable)
+                return .failure(.cameraUnavailable)
             }
             
             // Configure camera for optimal OCR capture
@@ -85,25 +85,20 @@ final class CameraService: NSObject, ObservableObject {
             let input = try AVCaptureDeviceInput(device: camera)
             self.currentDevice = camera
             guard session.canAddInput(input) else {
-                return .failure(.cameraNotAvailable)
+                return .failure(.cameraUnavailable)
             }
             session.addInput(input)
             
             // Add photo output
             let output = AVCapturePhotoOutput()
             guard session.canAddOutput(output) else {
-                return .failure(.cameraNotAvailable)
+                return .failure(.cameraUnavailable)
             }
             session.addOutput(output)
             
             // Configure output for optimal OCR processing
             output.isHighResolutionCaptureEnabled = true
             output.maxPhotoQualityPrioritization = .quality
-            
-            // Enable auto-stabilization if available
-            if output.isAutoRedEyeReductionSupported {
-                output.isAutoRedEyeReductionEnabled = false // Faster for text
-            }
             
             self.captureSession = session
             self.photoOutput = output
@@ -123,7 +118,7 @@ final class CameraService: NSObject, ObservableObject {
         }
         
         guard let photoOutput = photoOutput else {
-            return .failure(.cameraNotAvailable)
+            return .failure(.cameraUnavailable)
         }
         
         isCapturing = true
@@ -134,11 +129,13 @@ final class CameraService: NSObject, ObservableObject {
             }
             
             // Configure photo settings for OCR optimization
-            let settings = AVCapturePhotoSettings()
+            let settings: AVCapturePhotoSettings
             
             // Use JPEG format for optimal file size/quality balance
             if photoOutput.availablePhotoCodecTypes.contains(.jpeg) {
-                settings.format = [AVVideoCodecKey: AVVideoCodecType.jpeg]
+                settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])
+            } else {
+                settings = AVCapturePhotoSettings()
             }
             
             // Enable high resolution for better OCR accuracy
@@ -158,7 +155,7 @@ final class CameraService: NSObject, ObservableObject {
     func startSession() {
         guard let session = captureSession else { return }
         
-        Task {
+        DispatchQueue.global(qos: .userInitiated).async {
             if !session.isRunning {
                 session.startRunning()
             }
@@ -168,8 +165,10 @@ final class CameraService: NSObject, ObservableObject {
     func stopSession() {
         guard let session = captureSession else { return }
         
-        if session.isRunning {
-            session.stopRunning()
+        DispatchQueue.global(qos: .userInitiated).async {
+            if session.isRunning {
+                session.stopRunning()
+            }
         }
     }
     
@@ -207,7 +206,9 @@ final class CameraService: NSObject, ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.handleMemoryWarning()
+            Task { @MainActor in
+                self?.handleMemoryWarning()
+            }
         }
     }
     
@@ -261,7 +262,10 @@ final class CameraService: NSObject, ObservableObject {
         if let observer = memoryObserver {
             NotificationCenter.default.removeObserver(observer)
         }
-        stopSession()
+        // Stop session synchronously in deinit
+        if let session = captureSession, session.isRunning {
+            session.stopRunning()
+        }
         captureSession = nil
         photoOutput = nil
         currentDevice = nil
@@ -271,31 +275,38 @@ final class CameraService: NSObject, ObservableObject {
 // MARK: - AVCapturePhotoCaptureDelegate
 
 extension CameraService: AVCapturePhotoCaptureDelegate {
-    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        defer { isCapturing = false }
-        
+    nonisolated func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         if let error = error {
             print("Photo capture error: \(error)")
-            currentCaptureCompletion?(.failure(.photoCaptureFailed))
+            Task { @MainActor in
+                isCapturing = false
+                currentCaptureCompletion?(.failure(.photoCaptureFailed))
+            }
             return
         }
         
         guard let imageData = photo.fileDataRepresentation(),
               let image = UIImage(data: imageData) else {
-            currentCaptureCompletion?(.failure(.photoCaptureFailed))
+            Task { @MainActor in
+                isCapturing = false
+                currentCaptureCompletion?(.failure(.photoCaptureFailed))
+            }
             return
         }
         
         // Optimize image for OCR processing
         let optimizedImage = optimizeImageForOCR(image)
         
-        capturedImage = optimizedImage
-        currentCaptureCompletion?(.success(optimizedImage))
+        Task { @MainActor in
+            isCapturing = false
+            capturedImage = optimizedImage
+            currentCaptureCompletion?(.success(optimizedImage))
+        }
     }
     
     // MARK: - Image Optimization
     
-    private func optimizeImageForOCR(_ image: UIImage) -> UIImage {
+    nonisolated private func optimizeImageForOCR(_ image: UIImage) -> UIImage {
         // Ensure image is right-side up for OCR
         let orientedImage = image.fixedOrientation()
         

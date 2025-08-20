@@ -59,7 +59,7 @@ final class ConsentManager: ObservableObject {
             consentStatus = .unknown
         }
         
-        logger.info("Consent state loaded - Status: \(consentStatus.rawValue)")
+        logger.info("Consent state loaded - Status: \(self.consentStatus.rawValue)")
     }
     
     private func saveConsentState() {
@@ -107,7 +107,9 @@ final class ConsentManager: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.updateTrackingAuthorizationStatus()
+            Task { @MainActor in
+                self?.updateTrackingAuthorizationStatus()
+            }
         }
     }
     
@@ -155,7 +157,7 @@ final class ConsentManager: ObservableObject {
         // Notify other services about consent changes
         NotificationCenter.default.post(name: .consentUpdated, object: consent)
         
-        logger.info("Initial consent recorded - Status: \(consentStatus.rawValue)")
+        logger.info("Initial consent recorded - Status: \(self.consentStatus.rawValue)")
     }
     
     func updateConsent(for category: ConsentCategory, granted: Bool, mechanism: ConsentMechanism = .explicit) {
@@ -380,40 +382,6 @@ enum ConsentStatus: String, CaseIterable {
     case partial = "Partial"
 }
 
-enum ConsentCategory: String, CaseIterable {
-    case dataProcessing = "Data Processing"
-    case apiCommunication = "API Communication"
-    case errorReporting = "Error Reporting"
-    case analytics = "Analytics"
-    case marketing = "Marketing"
-    case tracking = "Tracking"
-    
-    var isEssential: Bool {
-        switch self {
-        case .dataProcessing, .apiCommunication:
-            return true
-        case .errorReporting, .analytics, .marketing, .tracking:
-            return false
-        }
-    }
-    
-    var description: String {
-        switch self {
-        case .dataProcessing:
-            return "Allow processing of menu photos to generate dish visualizations"
-        case .apiCommunication:
-            return "Allow communication with AI service to create visualizations"
-        case .errorReporting:
-            return "Allow anonymous error reporting to improve the app"
-        case .analytics:
-            return "Allow anonymous usage analytics (Not implemented in Menuly)"
-        case .marketing:
-            return "Allow marketing communications (Not applicable to Menuly)"
-        case .tracking:
-            return "Allow tracking across apps and websites (Not applicable to Menuly)"
-        }
-    }
-}
 
 enum ConsentMechanism: String, Codable {
     case explicit = "Explicit"

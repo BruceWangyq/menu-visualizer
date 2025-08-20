@@ -36,6 +36,7 @@ class NetworkSecurityManager: NSObject {
     // MARK: - Properties
     
     private let session: URLSession
+    private var delegateSession: URLSession?
     private var requestTimes: [Date] = []
     private let requestTimesQueue = DispatchQueue(label: "com.menuly.network.rate-limit")
     
@@ -63,9 +64,12 @@ class NetworkSecurityManager: NSObject {
             "Pragma": "no-cache"
         ]
         
+        // Initialize session before super.init() since it's let
         self.session = URLSession(configuration: configuration)
         super.init()
-        self.session.configuration.urlSessionDelegate = self
+        
+        // Create a separate session with delegate for certificate pinning
+        self.delegateSession = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
     }
     
     // MARK: - Secure Request Methods

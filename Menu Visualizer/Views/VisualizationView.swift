@@ -55,7 +55,7 @@ struct VisualizationView: View {
                         .font(AppTypography.buttonText)
                         .padding(.horizontal, AppSpacing.xl)
                         .padding(.vertical, AppSpacing.md)
-                        .background(.spiceOrange, in: Capsule())
+                        .background(Color.spiceOrange, in: Capsule())
                         .foregroundColor(.white)
                     }
                 }
@@ -75,7 +75,7 @@ struct VisualizationView: View {
         description: "A sample dish for preview",
         price: "$12.99",
         category: .mainCourse,
-        confidence: 0.9
+        extractionConfidence: 0.9
     )
     
     NavigationView {

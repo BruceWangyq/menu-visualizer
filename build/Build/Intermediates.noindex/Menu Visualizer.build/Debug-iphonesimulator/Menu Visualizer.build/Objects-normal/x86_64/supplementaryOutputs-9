@@ -1,0 +1,24 @@
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Services/ImagePreprocessor.swift":
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ImagePreprocessor.swiftconstvalues"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ImagePreprocessor.d"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ImagePreprocessor.o"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ImagePreprocessor.swiftdeps"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ImagePreprocessor.dia"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Services/CameraService.swift":
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/CameraService.swiftconstvalues"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/CameraService.swiftdeps"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/CameraService.d"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/CameraService.dia"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/CameraService.o"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/ContentView.swift":
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ContentView.o"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ContentView.swiftdeps"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ContentView.swiftconstvalues"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ContentView.d"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ContentView.dia"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Views/DishListView.swift":
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/DishListView.d"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/DishListView.o"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/DishListView.dia"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/DishListView.swiftconstvalues"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/DishListView.swiftdeps"

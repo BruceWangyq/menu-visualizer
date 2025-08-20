@@ -116,7 +116,7 @@ struct PreparationNotesView: View {
             }
         }
         .padding(AppSpacing.lg)
-        .background(.warmWhite, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
+        .background(Color.warmWhite, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
         .overlay(
             RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium)
                 .stroke(Color.spiceOrange.opacity(0.2), lineWidth: 1)
@@ -136,7 +136,7 @@ struct PreparationNotesView: View {
         }
         .padding(.horizontal, AppSpacing.chipPadding)
         .padding(.vertical, AppSpacing.xs)
-        .background(.goldenYellow.opacity(0.15), in: Capsule())
+        .background(Color.goldenYellow.opacity(0.15), in: Capsule())
     }
     
     private func temperatureBadge(_ temperature: String) -> some View {
@@ -152,7 +152,7 @@ struct PreparationNotesView: View {
         }
         .padding(.horizontal, AppSpacing.chipPadding)
         .padding(.vertical, AppSpacing.xs)
-        .background(.appetiteRed.opacity(0.15), in: Capsule())
+        .background(Color.appetiteRed.opacity(0.15), in: Capsule())
     }
     
     // MARK: - Cooking Techniques Section
@@ -221,7 +221,7 @@ struct PreparationNotesView: View {
                 }
             }
             .padding(AppSpacing.md)
-            .background(.softBeige, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
+            .background(Color.softBeige, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
             .overlay(
                 RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium)
                     .stroke(technique.color.opacity(0.3), lineWidth: 1)
@@ -341,7 +341,7 @@ struct PreparationNotesView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(AppSpacing.lg)
-            .background(.herbGreen.opacity(0.08), in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
+            .background(Color.herbGreen.opacity(0.08), in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
         }
     }
     
@@ -645,13 +645,13 @@ struct TechniqueDetailSheet: View {
             }
             .navigationTitle("Cooking Technique")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
                     }
                 }
-            }
+            })
         }
     }
 }

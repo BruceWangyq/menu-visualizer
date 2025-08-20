@@ -1,0 +1,24 @@
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Views/Components/ComponentsIndex.swift":
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ComponentsIndex.swiftdeps"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ComponentsIndex.dia"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ComponentsIndex.d"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ComponentsIndex.o"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ComponentsIndex.swiftconstvalues"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Services/VisualizationService.swift":
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/VisualizationService.swiftconstvalues"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/VisualizationService.swiftdeps"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/VisualizationService.dia"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/VisualizationService.d"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/VisualizationService.o"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Views/Components/ExpandedVisualizationView.swift":
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ExpandedVisualizationView.dia"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ExpandedVisualizationView.swiftconstvalues"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ExpandedVisualizationView.o"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ExpandedVisualizationView.d"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/ExpandedVisualizationView.swiftdeps"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Views/Privacy/PrivacyControlsView.swift":
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/PrivacyControlsView.dia"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/PrivacyControlsView.d"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/PrivacyControlsView.o"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/PrivacyControlsView.swiftconstvalues"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/x86_64/PrivacyControlsView.swiftdeps"

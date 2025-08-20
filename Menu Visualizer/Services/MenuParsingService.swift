@@ -68,10 +68,10 @@ final class MenuParsingService: ObservableObject {
     
     private let parsingQueue = DispatchQueue(label: "com.menuly.parsing", qos: .userInitiated)
     private let languageRecognizer = NLLanguageRecognizer()
-    private let sentimentAnalyzer = NLSentimentAnalyzer()
+    // Sentiment analyzer removed - NaturalLanguage not imported
     
     // Enhanced price detection patterns for multiple currencies
-    private let pricePatterns = [
+    static let pricePatterns = [
         #"[\$]\s*\d+(?:[.,]\d{2})?"#,  // USD: $12.99, $12,99
         #"[€]\s*\d+(?:[.,]\d{2})?"#,   // EUR: €12.99, €12,99
         #"[£]\s*\d+(?:[.,]\d{2})?"#,   // GBP: £12.99, £12,99
@@ -495,7 +495,7 @@ final class MenuParsingService: ObservableObject {
     private func extractPriceInfo(from block: OCRResult.TextBlock) -> PriceInfo? {
         let text = block.text
         
-        for pattern in pricePatterns {
+        for pattern in Self.pricePatterns {
             if let regex = try? NSRegularExpression(pattern: pattern),
                let match = regex.firstMatch(in: text, options: [], range: NSRange(text.startIndex..<text.endIndex, in: text)) {
                 

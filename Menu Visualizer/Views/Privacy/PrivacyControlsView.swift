@@ -11,7 +11,7 @@ import LocalAuthentication
 /// Comprehensive privacy controls view with native iOS design patterns
 struct PrivacyControlsView: View {
     @StateObject private var privacySettings = PrivacySettingsService()
-    @StateObject private var privacyCompliance = PrivacyComplianceService()
+    @StateObject private var privacyCompliance = PrivacyComplianceService.create()
     @StateObject private var consentManager = ConsentManager()
     
     @State private var showingBiometricAuth = false
@@ -153,7 +153,7 @@ struct PrivacyControlsView: View {
                     }
                 }
             )) {
-                ForEach(DataRetentionPolicy.allCases, id: \.self) { policy in
+                ForEach(PrivacySettings.DataRetentionPolicy.allCases, id: \.self) { policy in
                     VStack(alignment: .leading) {
                         Text(policy.rawValue)
                         Text(policy.description)
@@ -534,6 +534,26 @@ extension LAContext {
                 }
             }
         }
+    }
+}
+
+// MARK: - Placeholder Views
+
+struct SystemPrivacySettingsView: View {
+    var body: some View {
+        Text("System Privacy Settings")
+    }
+}
+
+struct PrivacyReportView: View {
+    var body: some View {
+        Text("Privacy Report")
+    }
+}
+
+struct SecurityAuditView: View {
+    var body: some View {
+        Text("Security Audit")
     }
 }
 

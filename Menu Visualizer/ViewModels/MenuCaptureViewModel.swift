@@ -83,15 +83,15 @@ final class MenuCaptureViewModel: ObservableObject {
         }
     }
     
-    func startCameraSession() {
+    func startCameraSession() async {
         guard cameraService.isAuthorized else {
-            Task {
-                await requestCameraPermission()
-            }
+            await requestCameraPermission()
             return
         }
         
-        switch cameraService.setupCaptureSession() {
+        let result = cameraService.setupCaptureSession()
+        
+        switch result {
         case .success:
             cameraService.startSession()
             isShowingCamera = true
@@ -267,6 +267,7 @@ final class MenuCaptureViewModel: ObservableObject {
     
     func clearAllData() {
         resetCapture()
+        
         cameraService.stopSession()
         
         // Clear any cached data in services

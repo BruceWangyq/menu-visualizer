@@ -10,6 +10,7 @@ import SwiftUI
 import UIKit
 
 /// Example implementation demonstrating the comprehensive OCR system usage
+@MainActor
 class OCRUsageExample: ObservableObject {
     
     // MARK: - Services

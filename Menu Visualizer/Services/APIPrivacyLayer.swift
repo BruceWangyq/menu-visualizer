@@ -40,15 +40,13 @@ final class APIPrivacyLayer: ObservableObject {
     // MARK: - Initialization
     
     init() {
-        // Configure secure session
+        // Initialize stored properties first
         sessionConfiguration = URLSessionConfiguration.default
-        setupSecureSessionConfiguration()
-        
-        // Initialize certificate pinning
         pinnedCertificates = Self.loadPinnedCertificates()
         trustedHosts = ["api.anthropic.com"] // Claude API endpoint
         
-        // Setup network monitoring
+        // Now setup configurations
+        setupSecureSessionConfiguration()
         setupNetworkMonitoring()
         
         logger.info("API Privacy Layer initialized")

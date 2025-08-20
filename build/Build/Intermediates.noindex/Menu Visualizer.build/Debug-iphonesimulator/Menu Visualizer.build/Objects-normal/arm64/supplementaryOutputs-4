@@ -1,0 +1,24 @@
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Services/DataProtectionManager.swift":
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/DataProtectionManager.d"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/DataProtectionManager.o"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/DataProtectionManager.swiftdeps"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/DataProtectionManager.swiftconstvalues"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/DataProtectionManager.dia"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Services/PrivacySettingsService.swift":
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/PrivacySettingsService.swiftconstvalues"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/PrivacySettingsService.swiftdeps"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/PrivacySettingsService.dia"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/PrivacySettingsService.d"
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/PrivacySettingsService.o"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/ViewModels/MenuCaptureViewModel.swift":
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/MenuCaptureViewModel.o"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/MenuCaptureViewModel.swiftconstvalues"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/MenuCaptureViewModel.d"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/MenuCaptureViewModel.swiftdeps"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/MenuCaptureViewModel.dia"
+"/Users/wangyuqiu/Documents/project/Menu Visualizer/Menu Visualizer/Views/Components/PreparationNotesView.swift":
+  object: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/PreparationNotesView.o"
+  diagnostics: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/PreparationNotesView.dia"
+  const-values: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/PreparationNotesView.swiftconstvalues"
+  swift-dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/PreparationNotesView.swiftdeps"
+  dependencies: "/Users/wangyuqiu/Documents/project/Menu Visualizer/build/Build/Intermediates.noindex/Menu Visualizer.build/Debug-iphonesimulator/Menu Visualizer.build/Objects-normal/arm64/PreparationNotesView.d"

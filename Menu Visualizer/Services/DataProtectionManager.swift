@@ -11,6 +11,7 @@ import CoreData
 import CryptoKit
 import LocalAuthentication
 import OSLog
+import UIKit
 
 /// Comprehensive data protection manager using iOS security frameworks
 @MainActor
@@ -35,7 +36,7 @@ final class DataProtectionManager: ObservableObject {
         let storeDescription = container.persistentStoreDescriptions.first
         storeDescription?.shouldMigrateStoreAutomatically = true
         storeDescription?.shouldInferMappingModelAutomatically = true
-        storeDescription?.setOption(FileProtectionType.completeUntilFirstUserAuthentication as NSObject, 
+        storeDescription?.setOption(true as NSObject, 
                                    forKey: NSPersistentHistoryTrackingKey)
         
         // Enable Core Data encryption
@@ -76,7 +77,7 @@ final class DataProtectionManager: ObservableObject {
         // Check biometric authentication
         await validateBiometricCapabilities()
         
-        logger.info("Security capabilities validated - Keychain: \(isKeychainAvailable), SecureEnclave: \(isSecureEnclaveAvailable), Biometric: \(isBiometricAuthEnabled)")
+        logger.info("Security capabilities validated - Keychain: \(self.isKeychainAvailable), SecureEnclave: \(self.isSecureEnclaveAvailable), Biometric: \(self.isBiometricAuthEnabled)")
     }
     
     private func validateKeychainAccess() async -> Bool {
@@ -144,7 +145,7 @@ final class DataProtectionManager: ObservableObject {
         // Configure memory protection
         await setupMemoryProtection()
         
-        logger.info("Data protection setup completed with level: \(dataProtectionLevel)")
+        logger.info("Data protection setup completed with level: \(String(describing: self.dataProtectionLevel))")
     }
     
     private func setupMemoryProtection() async {
@@ -154,7 +155,9 @@ final class DataProtectionManager: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.handleAppWillResignActive()
+            Task { @MainActor in
+                self?.handleAppWillResignActive()
+            }
         }
         
         // Monitor for screen recording
@@ -163,7 +166,9 @@ final class DataProtectionManager: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.handleScreenRecordingChange()
+            Task { @MainActor in
+                self?.handleScreenRecordingChange()
+            }
         }
     }
     

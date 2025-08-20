@@ -173,8 +173,12 @@ struct ProcessingStatusView: View {
         switch pipeline.processingState {
         case .idle:
             return .gray
+        case .capturingPhoto:
+            return .blue
         case .processingOCR:
             return .blue
+        case .extractingDishes:
+            return .orange
         case .parsingMenu:
             return .orange
         case .generatingVisualization:
@@ -183,14 +187,12 @@ struct ProcessingStatusView: View {
             return .green
         case .error:
             return .red
-        default:
-            return .blue
         }
     }
     
     private var shouldRotate: Bool {
         switch pipeline.processingState {
-        case .processingOCR, .parsingMenu, .generatingVisualization:
+        case .processingOCR, .extractingDishes, .parsingMenu, .generatingVisualization:
             return true
         default:
             return false
@@ -247,6 +249,8 @@ struct ProcessingStatusView: View {
             return "camera.fill"
         case .processingOCR:
             return "doc.text.viewfinder"
+        case .extractingDishes:
+            return "list.bullet.rectangle"
         case .parsingMenu:
             return "list.bullet.rectangle"
         case .generatingVisualization:
@@ -273,91 +277,6 @@ struct ProcessingStatusView: View {
     }
 }
 
-// MARK: - Error Recovery View
-
-struct ErrorRecoveryView: View {
-    @EnvironmentObject private var coordinator: AppCoordinator
-    @EnvironmentObject private var pipeline: MenuProcessingPipeline
-    let error: MenulyError
-    
-    var body: some View {
-        VStack(spacing: 32) {
-            // Error icon
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 64))
-                .foregroundColor(.red)
-            
-            // Error content
-            VStack(spacing: 16) {
-                Text("Something went wrong")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                
-                Text(error.displayMessage)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-            }
-            
-            // Action buttons
-            VStack(spacing: 12) {
-                if error.isRecoverable {
-                    Button {
-                        coordinator.recoverFromError()
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "arrow.clockwise")
-                            Text("Try Again")
-                        }
-                        .font(.headline)
-                        .fontWeight(.medium)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(.blue, in: RoundedRectangle(cornerRadius: 12))
-                        .foregroundColor(.white)
-                    }
-                }
-                
-                Button {
-                    coordinator.navigateToRoot()
-                    pipeline.reset()
-                } label: {
-                    Text("Start Over")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(.gray.opacity(0.2), in: RoundedRectangle(cornerRadius: 12))
-                        .foregroundColor(.primary)
-                }
-                
-                // Settings button for configuration errors
-                if case .apiKeyMissing = error {
-                    Button {
-                        coordinator.navigate(to: .settings)
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "gear")
-                            Text("Open Settings")
-                        }
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(.orange.opacity(0.2), in: RoundedRectangle(cornerRadius: 12))
-                        .foregroundColor(.orange)
-                    }
-                }
-            }
-            .padding(.horizontal)
-        }
-        .padding()
-        .navigationTitle("Error")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
 
 // MARK: - Preview
 

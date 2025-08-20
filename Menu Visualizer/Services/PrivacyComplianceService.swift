@@ -69,18 +69,22 @@ final class PrivacyComplianceService: ObservableObject {
     
     // MARK: - Initialization
     
-    init(dataProtectionManager: DataProtectionManager = DataProtectionManager(), 
-         consentManager: ConsentManager = ConsentManager()) {
+    init(dataProtectionManager: DataProtectionManager, 
+         consentManager: ConsentManager) {
         self.dataProtectionManager = dataProtectionManager
         self.consentManager = consentManager
+        
+        // Initialize properties first
+        let needsToSaveSettings: Bool
         
         // Load privacy settings
         if let data = userDefaults.data(forKey: Keys.privacySettings),
            let settings = try? JSONDecoder().decode(PrivacySettings.self, from: data) {
             self.privacySettings = settings
+            needsToSaveSettings = false
         } else {
             self.privacySettings = .default
-            savePrivacySettings()
+            needsToSaveSettings = true
         }
         
         // Load other persistent data
@@ -99,6 +103,11 @@ final class PrivacyComplianceService: ObservableObject {
             protectedFilesCount: 0,
             lastSecurityAudit: nil
         )
+        
+        // Save settings if needed (after all properties are initialized)
+        if needsToSaveSettings {
+            savePrivacySettings()
+        }
         
         // Check if first launch
         if !userDefaults.bool(forKey: Keys.firstLaunch) {
@@ -193,7 +202,7 @@ final class PrivacyComplianceService: ObservableObject {
             status.hasCachedAPIResponses = true
         }
         
-        logger.debug("API call tracked (total: \(apiCallsCount))")
+        logger.debug("API call tracked (total: \(self.apiCallsCount))")
     }
     
     func updateMemoryUsage(_ usage: UInt64) {
@@ -226,7 +235,11 @@ final class PrivacyComplianceService: ObservableObject {
             hasOCRResults: false,
             hasMenuData: false,
             hasCachedAPIResponses: false,
-            estimatedMemoryUsage: 0
+            estimatedMemoryUsage: 0,
+            encryptedDataCount: 0,
+            keychainItemsCount: 0,
+            protectedFilesCount: 0,
+            lastSecurityAudit: nil
         )
         
         lastDataClearTime = Date()
@@ -384,7 +397,7 @@ final class PrivacyComplianceService: ObservableObject {
     private func performInitialComplianceCheck() async {
         await calculateComplianceScore()
         await auditDataRetention()
-        logger.info("Initial compliance check completed - Score: \(complianceScore)")
+        logger.info("Initial compliance check completed - Score: \(self.complianceScore)")
     }
     
     // MARK: - Privacy Violation Management
@@ -483,7 +496,7 @@ final class PrivacyComplianceService: ObservableObject {
     
     // MARK: - Compliance Score Calculation
     
-    private func calculateComplianceScore() async {
+    func calculateComplianceScore() async {
         var score: Double = 1.0
         
         // Deduct for privacy violations
@@ -630,6 +643,16 @@ final class PrivacyComplianceService: ObservableObject {
         let lastSecurityAudit: Date?
         let recommendations: [PrivacyRecommendation]
     }
+    
+    // MARK: - Factory Method
+    
+    @MainActor
+    static func create() -> PrivacyComplianceService {
+        let dataProtectionManager = DataProtectionManager()
+        let consentManager = ConsentManager()
+        return PrivacyComplianceService(dataProtectionManager: dataProtectionManager, consentManager: consentManager)
+    }
+}
 
 // MARK: - Supporting Types
 

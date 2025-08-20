@@ -35,9 +35,14 @@ struct AppNavigationView: View {
             OnboardingView()
         case .idle, .viewing:
             MenuCaptureView()
-        case .processing:
+        case .capturingPhoto, .processing, .processingOCR, .extractingDishes:
             MenuCaptureView()
                 .disabled(true)
+        case .generatingVisualization:
+            MenuCaptureView()
+                .disabled(true)
+        case .displayingResults:
+            MenuCaptureView()
         case .error:
             MenuCaptureView()
         }
@@ -58,7 +63,7 @@ struct MainAppView: View {
                 MenuCaptureView()
                     .navigationTitle("Menuly")
                     .navigationBarTitleDisplayMode(.large)
-                    .toolbar {
+                    .toolbar(content: {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button {
                                 coordinator.navigate(to: .settings)
@@ -67,7 +72,7 @@ struct MainAppView: View {
                                     .fontWeight(.medium)
                             }
                         }
-                    }
+                    })
             }
             .tabItem {
                 Label("Capture", systemImage: "camera.fill")

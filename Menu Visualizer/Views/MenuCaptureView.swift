@@ -76,9 +76,7 @@ struct MenuCaptureView: View {
         } message: {
             Text(viewModel.currentError?.localizedDescription ?? "")
         }
-        .overlay {
-            permissionManager.permissionAlerts()
-        }
+        .cameraPermissionAlerts(permissionManager: permissionManager)
     }
     
     // MARK: - Header View

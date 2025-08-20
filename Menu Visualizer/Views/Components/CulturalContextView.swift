@@ -178,7 +178,7 @@ struct CulturalContextView: View {
         }
         .padding(AppSpacing.md)
         .frame(width: 200)
-        .background(.warmWhite, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
+        .background(Color.warmWhite, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
         .overlay(
             RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium)
                 .stroke(Color.sageGreen.opacity(0.2), lineWidth: 1)
@@ -357,7 +357,7 @@ struct CulturalContextView: View {
                 .lineSpacing(4)
         }
         .padding(AppSpacing.lg)
-        .background(.spiceOrange.opacity(0.06), in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
+        .background(Color.spiceOrange.opacity(0.06), in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
     }
     
     private var modernAdaptationsCard: some View {
@@ -377,7 +377,7 @@ struct CulturalContextView: View {
                 .lineSpacing(4)
         }
         .padding(AppSpacing.lg)
-        .background(.herbGreen.opacity(0.06), in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
+        .background(Color.herbGreen.opacity(0.06), in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
     }
     
     // MARK: - Helper Views
@@ -632,6 +632,8 @@ enum CulturalRegion: String, CaseIterable {
             return "After meal"
         case .beverage:
             return "Throughout meal"
+        case .special:
+            return "Special occasion"
         case .unknown:
             return "Flexible timing"
         }

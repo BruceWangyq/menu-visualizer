@@ -252,15 +252,19 @@ final class VisualizationService: ObservableObject {
     
     // MARK: - Cleanup (Privacy Compliance)
     
-    func clearCache() {
+    func clearCache() async {
         lastGeneratedVisualization = nil
         
         // Clear URL session cache
-        session.configuration.urlCache?.removeAllCachedResponses()
+        await Task.detached {
+            self.session.configuration.urlCache?.removeAllCachedResponses()
+        }.value
     }
     
     deinit {
-        clearCache()
+        Task {
+            await clearCache()
+        }
     }
 }
 

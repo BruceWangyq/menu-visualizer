@@ -97,10 +97,10 @@ struct DishVisualizationCard: View {
     
     private var categoryBadge: some View {
         HStack(spacing: AppSpacing.xs) {
-            Text(dish.category.icon)
+            Text(dish.category?.icon ?? "❓")
                 .font(.caption)
             
-            Text(dish.category.rawValue)
+            Text(dish.category?.rawValue ?? "Unknown")
                 .font(AppTypography.captionLarge)
                 .fontWeight(.medium)
         }
@@ -134,7 +134,7 @@ struct DishVisualizationCard: View {
                 Label("AI Enhanced", systemImage: "sparkles")
                     .font(AppTypography.captionLarge)
                     .fontWeight(.semibold)
-                    .foregroundColor(.spiceOrange)
+                    .foregroundColor(Color.spiceOrange)
                 
                 Spacer()
                 
@@ -254,7 +254,7 @@ struct DishVisualizationCard: View {
                     .fontWeight(.medium)
                     .padding(.horizontal, AppSpacing.chipPadding)
                     .padding(.vertical, AppSpacing.xs)
-                    .background(.lightGray.opacity(0.3), in: Capsule())
+                    .background(Color.lightGray.opacity(0.3), in: Capsule())
                     .foregroundColor(.midGray)
             }
         }
@@ -271,7 +271,7 @@ struct DishVisualizationCard: View {
             HStack {
                 Image(systemName: "sparkles.rectangle.stack")
                     .font(.title2)
-                    .foregroundColor(.spiceOrange.opacity(0.7))
+                    .foregroundColor(Color.spiceOrange.opacity(0.7))
                 
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text("Create AI Visualization")
@@ -296,7 +296,7 @@ struct DishVisualizationCard: View {
                     .font(AppTypography.buttonTextSmall)
                     .padding(.horizontal, AppSpacing.md)
                     .padding(.vertical, AppSpacing.sm)
-                    .background(.spiceOrange, in: Capsule())
+                    .background(Color.spiceOrange, in: Capsule())
                     .foregroundColor(.white)
                 }
                 .buttonStyle(.plain)
@@ -332,7 +332,7 @@ struct DishVisualizationCard: View {
                     Button(action: onVisualize) {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 14))
-                            .foregroundColor(.spiceOrange)
+                            .foregroundColor(Color.spiceOrange)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Regenerate visualization")
@@ -341,7 +341,7 @@ struct DishVisualizationCard: View {
                 // Navigation indicator
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundColor(.lightGray)
+                    .foregroundColor(Color.lightGray)
             }
         }
         .padding(.horizontal, AppSpacing.cardPadding)
@@ -357,7 +357,7 @@ struct DishVisualizationCard: View {
             } else if dish.isGenerating {
                 Label("Generating...", systemImage: "hourglass")
                     .font(AppTypography.captionLarge)
-                    .foregroundColor(.spiceOrange)
+                    .foregroundColor(Color.spiceOrange)
             } else {
                 Label("Ready to enhance", systemImage: "plus.circle")
                     .font(AppTypography.captionLarge)
@@ -380,7 +380,9 @@ struct DishVisualizationCard: View {
         case .vegetarian: return .vegetarianGreen
         case .dessert: return .organicPurple
         case .beverage: return .glutenFreeBlue
+        case .special: return Color.spiceOrange
         case .unknown: return .midGray
+        case .none: return .midGray
         }
     }
     
@@ -409,13 +411,18 @@ struct DishVisualizationCard: View {
         description: "Fresh salmon with lemon herbs and seasonal vegetables",
         price: "$28.99",
         category: .seafood,
-        confidence: 0.95
+        extractionConfidence: 0.95
     )
-    sampleDish.aiVisualization = visualization
     
-    VStack(spacing: 20) {
+    let sampleDishWithVisualization = {
+        var dish = sampleDish
+        dish.aiVisualization = visualization
+        return dish
+    }()
+    
+    return VStack(spacing: 20) {
         DishVisualizationCard(
-            dish: sampleDish,
+            dish: sampleDishWithVisualization,
             onTap: { print("Card tapped") },
             onVisualize: { print("Visualize tapped") },
             onFavorite: { print("Favorite tapped") }
@@ -433,13 +440,18 @@ struct DishVisualizationCard: View {
         description: "Creamy arborio rice with wild mushrooms",
         price: "$24.99",
         category: .vegetarian,
-        confidence: 0.88
+        extractionConfidence: 0.88
     )
-    generatingDish.isGenerating = true
     
-    VStack(spacing: 20) {
+    let dishInProgress = {
+        var dish = generatingDish
+        dish.isGenerating = true
+        return dish
+    }()
+    
+    return VStack(spacing: 20) {
         DishVisualizationCard(
-            dish: generatingDish,
+            dish: dishInProgress,
             onTap: { print("Card tapped") },
             onVisualize: { print("Visualize tapped") },
             onFavorite: { print("Favorite tapped") }
@@ -457,7 +469,7 @@ struct DishVisualizationCard: View {
         description: "Fresh romaine lettuce with parmesan cheese and croutons",
         price: "$16.99",
         category: .salad,
-        confidence: 0.92
+        extractionConfidence: 0.92
     )
     
     VStack(spacing: 20) {

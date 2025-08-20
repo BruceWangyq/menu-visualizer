@@ -319,9 +319,9 @@ final class ImagePreprocessor {
     
     private func calculateSharpness(_ image: CIImage) -> Float {
         // Apply Laplacian filter for edge detection
-        let kernel = CIKernel.gaussianBlur() // Simplified - would use custom Laplacian kernel
         // This is a simplified sharpness calculation
         // In production, you'd implement a proper Laplacian variance calculation
+        // Using a basic approach for now
         return 100.0 // Placeholder value
     }
     

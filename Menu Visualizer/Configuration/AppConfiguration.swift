@@ -7,13 +7,14 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 /// Central configuration for app settings and preferences
 struct AppConfiguration {
     
     // MARK: - OCR Configuration
     
-    enum OCRQuality: String, CaseIterable, Identifiable {
+    enum OCRQuality: String, CaseIterable, Identifiable, Codable {
         case fast = "Fast"
         case balanced = "Balanced"
         case accurate = "Accurate"
@@ -46,11 +47,24 @@ struct AppConfiguration {
                 return "6-10 seconds"
             }
         }
+        
+        var ocrServiceQuality: OCRService.OCRQuality {
+            switch self {
+            case .fast:
+                return .fast
+            case .balanced:
+                return .balanced
+            case .accurate:
+                return .accurate
+            case .maximum:
+                return .maximum
+            }
+        }
     }
     
     // MARK: - Processing Configuration
     
-    enum ProcessingPriority: String, CaseIterable {
+    enum ProcessingPriority: String, CaseIterable, Codable {
         case speed = "Speed"
         case quality = "Quality"
         case balanced = "Balanced"
@@ -74,7 +88,7 @@ struct AppConfiguration {
     
     // MARK: - Language Configuration
     
-    enum SupportedLanguage: String, CaseIterable, Identifiable {
+    enum SupportedLanguage: String, CaseIterable, Identifiable, Codable {
         case english = "en-US"
         case spanish = "es-ES"
         case french = "fr-FR"
@@ -159,7 +173,7 @@ struct AppConfiguration {
     /// Get OCR configuration for current app settings
     func getOCRConfiguration() -> OCRService.OCRConfiguration {
         return OCRService.OCRConfiguration(
-            quality: defaultOCRQuality,
+            quality: defaultOCRQuality.ocrServiceQuality,
             languages: defaultLanguages.map { $0.rawValue },
             enableLayoutAnalysis: enableLayoutAnalysis,
             enableRegionDetection: true,
@@ -205,55 +219,88 @@ struct AppConfiguration {
 // MARK: - User Preferences
 
 /// User-configurable settings that can be changed in the app
-@Observable
-class UserPreferences {
+class UserPreferences: ObservableObject {
     static let shared = UserPreferences()
     
     // OCR Preferences
-    @UserDefault("ocrQuality", defaultValue: AppConfiguration.OCRQuality.balanced)
-    var ocrQuality: AppConfiguration.OCRQuality
-    
-    @UserDefault("selectedLanguages", defaultValue: [AppConfiguration.SupportedLanguage.english])
-    var selectedLanguages: [AppConfiguration.SupportedLanguage]
-    
-    @UserDefault("processingPriority", defaultValue: AppConfiguration.ProcessingPriority.balanced)
-    var processingPriority: AppConfiguration.ProcessingPriority
+    @Published var ocrQuality: AppConfiguration.OCRQuality = .balanced
+    @Published var selectedLanguages: [AppConfiguration.SupportedLanguage] = [.english]
+    @Published var processingPriority: AppConfiguration.ProcessingPriority = .balanced
     
     // Feature Preferences
-    @UserDefault("enableLayoutAnalysis", defaultValue: true)
-    var enableLayoutAnalysis: Bool
-    
-    @UserDefault("enableAdvancedPricing", defaultValue: true)
-    var enableAdvancedPricing: Bool
-    
-    @UserDefault("enableDietaryAnalysis", defaultValue: true)
-    var enableDietaryAnalysis: Bool
-    
-    @UserDefault("enableAutoLanguageDetection", defaultValue: true)
-    var enableAutoLanguageDetection: Bool
+    @Published var enableLayoutAnalysis: Bool = true
+    @Published var enableAdvancedPricing: Bool = true
+    @Published var enableDietaryAnalysis: Bool = true
+    @Published var enableAutoLanguageDetection: Bool = true
     
     // Privacy Preferences
-    @UserDefault("dataRetentionPolicy", defaultValue: PrivacySettings.DataRetentionPolicy.sessionOnly)
-    var dataRetentionPolicy: PrivacySettings.DataRetentionPolicy
-    
-    @UserDefault("enableAnalytics", defaultValue: false)
-    var enableAnalytics: Bool
+    @Published var dataRetentionPolicy: PrivacySettings.DataRetentionPolicy = .sessionOnly
+    @Published var enableAnalytics: Bool = false
     
     // Performance Preferences
-    @UserDefault("enableImagePreprocessing", defaultValue: true)
-    var enableImagePreprocessing: Bool
+    @Published var enableImagePreprocessing: Bool = true
+    @Published var enableBackgroundProcessing: Bool = true
     
-    @UserDefault("enableBackgroundProcessing", defaultValue: true)
-    var enableBackgroundProcessing: Bool
+    private init() {
+        loadUserDefaults()
+    }
     
-    private init() {}
+    private func loadUserDefaults() {
+        if let data = UserDefaults.standard.data(forKey: "ocrQuality"),
+           let decoded = try? JSONDecoder().decode(AppConfiguration.OCRQuality.self, from: data) {
+            ocrQuality = decoded
+        }
+        if let data = UserDefaults.standard.data(forKey: "selectedLanguages"),
+           let decoded = try? JSONDecoder().decode([AppConfiguration.SupportedLanguage].self, from: data) {
+            selectedLanguages = decoded
+        }
+        if let data = UserDefaults.standard.data(forKey: "processingPriority"),
+           let decoded = try? JSONDecoder().decode(AppConfiguration.ProcessingPriority.self, from: data) {
+            processingPriority = decoded
+        }
+        if let data = UserDefaults.standard.data(forKey: "dataRetentionPolicy"),
+           let decoded = try? JSONDecoder().decode(PrivacySettings.DataRetentionPolicy.self, from: data) {
+            dataRetentionPolicy = decoded
+        }
+        
+        enableLayoutAnalysis = UserDefaults.standard.bool(forKey: "enableLayoutAnalysis")
+        enableAdvancedPricing = UserDefaults.standard.bool(forKey: "enableAdvancedPricing")
+        enableDietaryAnalysis = UserDefaults.standard.bool(forKey: "enableDietaryAnalysis")
+        enableAutoLanguageDetection = UserDefaults.standard.bool(forKey: "enableAutoLanguageDetection")
+        enableAnalytics = UserDefaults.standard.bool(forKey: "enableAnalytics")
+        enableImagePreprocessing = UserDefaults.standard.bool(forKey: "enableImagePreprocessing")
+        enableBackgroundProcessing = UserDefaults.standard.bool(forKey: "enableBackgroundProcessing")
+    }
+    
+    func saveUserDefaults() {
+        if let data = try? JSONEncoder().encode(ocrQuality) {
+            UserDefaults.standard.set(data, forKey: "ocrQuality")
+        }
+        if let data = try? JSONEncoder().encode(selectedLanguages) {
+            UserDefaults.standard.set(data, forKey: "selectedLanguages")
+        }
+        if let data = try? JSONEncoder().encode(processingPriority) {
+            UserDefaults.standard.set(data, forKey: "processingPriority")
+        }
+        if let data = try? JSONEncoder().encode(dataRetentionPolicy) {
+            UserDefaults.standard.set(data, forKey: "dataRetentionPolicy")
+        }
+        
+        UserDefaults.standard.set(enableLayoutAnalysis, forKey: "enableLayoutAnalysis")
+        UserDefaults.standard.set(enableAdvancedPricing, forKey: "enableAdvancedPricing")
+        UserDefaults.standard.set(enableDietaryAnalysis, forKey: "enableDietaryAnalysis")
+        UserDefaults.standard.set(enableAutoLanguageDetection, forKey: "enableAutoLanguageDetection")
+        UserDefaults.standard.set(enableAnalytics, forKey: "enableAnalytics")
+        UserDefaults.standard.set(enableImagePreprocessing, forKey: "enableImagePreprocessing")
+        UserDefaults.standard.set(enableBackgroundProcessing, forKey: "enableBackgroundProcessing")
+    }
     
     // MARK: - Configuration Generation
     
     /// Generate OCR configuration from user preferences
     func createOCRConfiguration() -> OCRService.OCRConfiguration {
         return OCRService.OCRConfiguration(
-            quality: ocrQuality,
+            quality: ocrQuality.ocrServiceQuality,
             languages: selectedLanguages.map { $0.rawValue },
             enableLayoutAnalysis: enableLayoutAnalysis,
             enableRegionDetection: true,
@@ -283,38 +330,4 @@ class UserPreferences {
     }
 }
 
-// MARK: - UserDefault Property Wrapper
-
-@propertyWrapper
-struct UserDefault<T: Codable> {
-    let key: String
-    let defaultValue: T
-    
-    var wrappedValue: T {
-        get {
-            guard let data = UserDefaults.standard.data(forKey: key) else {
-                return defaultValue
-            }
-            
-            do {
-                return try JSONDecoder().decode(T.self, from: data)
-            } catch {
-                print("Failed to decode UserDefault for key '\(key)': \(error)")
-                return defaultValue
-            }
-        }
-        set {
-            do {
-                let data = try JSONEncoder().encode(newValue)
-                UserDefaults.standard.set(data, forKey: key)
-            } catch {
-                print("Failed to encode UserDefault for key '\(key)': \(error)")
-            }
-        }
-    }
-    
-    init(_ key: String, defaultValue: T) {
-        self.key = key
-        self.defaultValue = defaultValue
-    }
-}
+// UserDefault property wrapper removed - using @Published properties with manual UserDefaults persistence

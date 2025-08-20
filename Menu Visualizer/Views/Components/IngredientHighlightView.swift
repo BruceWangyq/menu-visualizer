@@ -53,7 +53,7 @@ struct IngredientHighlightView: View {
                     .foregroundColor(.midGray)
                     .padding(.horizontal, AppSpacing.chipPadding)
                     .padding(.vertical, AppSpacing.xs)
-                    .background(.lightGray.opacity(0.3), in: Capsule())
+                    .background(Color.lightGray.opacity(0.3), in: Capsule())
             }
             
             Text("Tap ingredients to learn more about their flavors and nutritional benefits")
@@ -190,7 +190,7 @@ struct IngredientHighlightView: View {
             }
             .padding(AppSpacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.warmWhite, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
+            .background(Color.warmWhite, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
             .overlay(
                 RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium)
                     .stroke(category.color.opacity(0.2), lineWidth: 1)
@@ -236,7 +236,7 @@ struct IngredientHighlightView: View {
             }
         }
         .padding(AppSpacing.lg)
-        .background(.softBeige, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
+        .background(Color.softBeige, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
     }
     
     private func dietaryBadge(_ indicator: DietaryIndicator) -> some View {
@@ -282,7 +282,7 @@ struct IngredientHighlightView: View {
             }
         }
         .padding(AppSpacing.md)
-        .background(.warningAmber.opacity(0.08), in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusSmall))
+        .background(Color.warningAmber.opacity(0.08), in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusSmall))
     }
     
     // MARK: - Computed Properties
@@ -652,7 +652,7 @@ struct IngredientDetailSheet: View {
                         .font(AppTypography.sensoryItalic)
                         .foregroundColor(.midGray)
                         .padding(AppSpacing.md)
-                        .background(.softBeige, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusSmall))
+                        .background(Color.softBeige, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusSmall))
                 }
                 
                 // Dietary indicators
@@ -695,7 +695,7 @@ struct IngredientDetailSheet: View {
                             .font(AppTypography.bodyMedium)
                             .foregroundColor(.charcoalGray)
                             .padding(AppSpacing.md)
-                            .background(.warningAmber.opacity(0.1), in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusSmall))
+                            .background(Color.warningAmber.opacity(0.1), in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusSmall))
                     }
                 }
                 
@@ -704,13 +704,13 @@ struct IngredientDetailSheet: View {
             .padding(AppSpacing.cardPadding)
             .navigationTitle("Ingredient Details")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
                     }
                 }
-            }
+            })
         }
     }
 }

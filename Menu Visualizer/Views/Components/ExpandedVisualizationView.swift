@@ -45,22 +45,22 @@ struct ExpandedVisualizationView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Done", action: onDismiss)
                         .font(AppTypography.buttonTextSmall)
-                        .foregroundColor(.spiceOrange)
+                        .foregroundColor(Color.spiceOrange)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
+                    SwiftUI.Menu {
                         shareMenuItems
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                             .foregroundColor(.charcoalGray)
                     }
                 }
-            }
+            })
             .background(backgroundGradient)
         }
         .sheet(isPresented: $showingShareSheet) {
@@ -102,7 +102,7 @@ struct ExpandedVisualizationView: View {
                                 .foregroundColor(.herbGreen)
                                 .padding(.horizontal, AppSpacing.md)
                                 .padding(.vertical, AppSpacing.xs)
-                                .background(.herbGreen.opacity(0.1), in: Capsule())
+                                .background(Color.herbGreen.opacity(0.1), in: Capsule())
                         }
                     }
                 }
@@ -110,11 +110,11 @@ struct ExpandedVisualizationView: View {
                 // AI enhancement indicator
                 HStack {
                     Image(systemName: "sparkles")
-                        .foregroundColor(.spiceOrange)
+                        .foregroundColor(Color.spiceOrange)
                     
                     Text("AI Enhanced Visualization")
                         .font(AppTypography.highlightMedium)
-                        .foregroundColor(.spiceOrange)
+                        .foregroundColor(Color.spiceOrange)
                     
                     Spacer()
                     
@@ -134,7 +134,7 @@ struct ExpandedVisualizationView: View {
                         .font(AppTypography.buttonTextSmall)
                         .padding(.horizontal, AppSpacing.md)
                         .padding(.vertical, AppSpacing.sm)
-                        .background(.spiceOrange, in: Capsule())
+                        .background(Color.spiceOrange, in: Capsule())
                         .foregroundColor(.white)
                     }
                     .disabled(isRegenerating)
@@ -156,10 +156,10 @@ struct ExpandedVisualizationView: View {
     
     private var categoryBadge: some View {
         HStack(spacing: AppSpacing.sm) {
-            Text(dish.category.icon)
+            Text(dish.category?.icon ?? "❓")
                 .font(.title3)
             
-            Text(dish.category.rawValue)
+            Text(dish.category?.rawValue ?? "Unknown")
                 .font(AppTypography.highlightMedium)
         }
         .padding(.horizontal, AppSpacing.md)
@@ -199,7 +199,7 @@ struct ExpandedVisualizationView: View {
                 .foregroundColor(selectedTab == tab ? .spiceOrange : .midGray)
                 
                 Rectangle()
-                    .fill(selectedTab == tab ? .spiceOrange : .clear)
+                    .fill(selectedTab == tab ? Color.spiceOrange : Color.clear)
                     .frame(height: 2)
             }
         }
@@ -257,7 +257,7 @@ struct ExpandedVisualizationView: View {
                 .lineSpacing(6)
                 .multilineTextAlignment(.leading)
                 .padding(AppSpacing.lg)
-                .background(.warmWhite, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
+                .background(Color.warmWhite, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
                 .overlay(
                     RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium)
                         .stroke(Color.goldenYellow.opacity(0.2), lineWidth: 1)
@@ -344,7 +344,7 @@ struct ExpandedVisualizationView: View {
                     .italic()
                     .foregroundColor(.charcoalGray)
                     .padding(AppSpacing.lg)
-                    .background(.softBeige, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
+                    .background(Color.softBeige, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadiusMedium))
             }
         }
     }
@@ -368,7 +368,7 @@ struct ExpandedVisualizationView: View {
     private var culturalContent: some View {
         CulturalContextView(
             dishName: dish.name,
-            category: dish.category,
+            category: dish.category ?? .unknown,
             ingredients: visualization.ingredients
         )
         .padding(AppSpacing.cardPadding)
@@ -439,7 +439,9 @@ struct ExpandedVisualizationView: View {
         case .vegetarian: return .vegetarianGreen
         case .dessert: return .organicPurple
         case .beverage: return .glutenFreeBlue
+        case .special: return Color.spiceOrange
         case .unknown: return .midGray
+        case .none: return .midGray
         }
     }
     
@@ -516,16 +518,7 @@ struct ScrollOffsetPreferenceKey: PreferenceKey {
 }
 
 // MARK: - Share Sheet
-
-struct ShareSheet: UIViewControllerRepresentable {
-    let activityItems: [Any]
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
+// ShareSheet is defined in DishDetailView.swift
 
 // MARK: - Preview
 
@@ -543,11 +536,16 @@ struct ShareSheet: UIViewControllerRepresentable {
         description: "Fresh salmon with seasonal vegetables",
         price: "$28.99",
         category: .seafood,
-        confidence: 0.95
+        extractionConfidence: 0.95
     )
-    sampleDish.aiVisualization = visualization
     
-    ExpandedVisualizationView(
+    let sampleDishWithVisualization = {
+        var dish = sampleDish
+        dish.aiVisualization = visualization
+        return dish
+    }()
+    
+    return ExpandedVisualizationView(
         dish: sampleDish,
         visualization: visualization,
         onRegenerate: { print("Regenerate visualization") },

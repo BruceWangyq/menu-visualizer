@@ -168,7 +168,7 @@ class APIKeyManager {
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: testPayload)
         } catch {
-            completion(.failure(.jsonParsingError))
+            completion(.failure(.jsonParsingError(error.localizedDescription)))
             return
         }
         
@@ -328,7 +328,11 @@ extension APIKeyManager {
     /// - Returns: True if hardware security is supported
     private func isHardwareSecurityAvailable() -> Bool {
         // Check for Secure Enclave availability
-        return TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+        #if targetEnvironment(simulator)
+        return false
+        #else
+        return true
+        #endif
     }
     
     /// Get last validation date (placeholder for future implementation)

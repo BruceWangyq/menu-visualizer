@@ -8,6 +8,18 @@
 
 import SwiftUI
 
+// MARK: - Material Extensions
+
+extension Material {
+    /// Regular material for backwards compatibility  
+    static let regularMaterial = Material.regular
+}
+
+extension Color {
+    /// Regular material as a Color for backwards compatibility
+    static let regularMaterial = Color(.systemBackground).opacity(0.8)
+}
+
 // MARK: - Color System
 
 extension Color {
@@ -337,11 +349,16 @@ struct LoadingVisualizationStyle: View {
             // Animated sparkles
             HStack(spacing: 8) {
                 ForEach(0..<3) { index in
+                    let phaseOffset = animationPhase + Double(index) * 0.5
+                    let sinValue = sin(phaseOffset)
+                    let opacity = 0.3 + 0.7 * sinValue
+                    let scale = 0.8 + 0.2 * sinValue
+                    
                     Image(systemName: "sparkles")
                         .font(.title2)
                         .foregroundColor(.spiceOrange)
-                        .opacity(0.3 + 0.7 * sin(animationPhase + Double(index) * 0.5))
-                        .scaleEffect(0.8 + 0.2 * sin(animationPhase + Double(index) * 0.5))
+                        .opacity(opacity)
+                        .scaleEffect(scale)
                 }
             }
             
@@ -396,7 +413,7 @@ extension View {
 // MARK: - Preview Helpers
 
 #if DEBUG
-extension DesignSystem {
+struct DesignSystemPreviews {
     static var previews: some View {
         Group {
             // Color palette preview
@@ -456,7 +473,7 @@ extension DesignSystem {
 
 struct DesignSystem_Previews: PreviewProvider {
     static var previews: some View {
-        DesignSystem.previews
+        DesignSystemPreviews.previews
     }
 }
 #endif

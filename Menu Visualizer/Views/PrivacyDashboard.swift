@@ -10,7 +10,7 @@ import SwiftUI
 struct PrivacyDashboard: View {
     @EnvironmentObject private var coordinator: AppCoordinator
     @EnvironmentObject private var pipeline: MenuProcessingPipeline
-    @AppStorage("dataRetentionPolicy") private var dataRetentionPolicy: DataRetentionPolicy = .sessionOnly
+    @AppStorage("dataRetentionPolicy") private var dataRetentionPolicy: PrivacySettings.DataRetentionPolicy = .sessionOnly
     @AppStorage("hasSeenPrivacyPolicy") private var hasSeenPrivacyPolicy: Bool = false
     @State private var showingClearDataAlert = false
     @State private var showingPrivacyPolicy = false
@@ -98,7 +98,7 @@ struct PrivacyDashboard: View {
                         icon: "trash",
                         title: "No Persistent Storage",
                         description: "Never saved to device storage",
-                        isActive: dataRetentionPolicy == .neverStore
+                        isActive: dataRetentionPolicy == .never
                     )
                 }
             }
@@ -160,7 +160,7 @@ struct PrivacyDashboard: View {
                 
                 if let menu = pipeline.currentMenu {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("• \(menu.extractedDishes.count) dishes processed")
+                        Text("• \(menu.dishes.count) dishes processed")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
@@ -215,7 +215,7 @@ struct PrivacyDashboard: View {
         Section {
             // Data retention policy
             Picker("Data Retention", selection: $dataRetentionPolicy) {
-                ForEach(DataRetentionPolicy.allCases, id: \.self) { policy in
+                ForEach(PrivacySettings.DataRetentionPolicy.allCases, id: \.self) { policy in
                     VStack(alignment: .leading) {
                         Text(policy.rawValue)
                             .font(.subheadline)
@@ -398,115 +398,6 @@ struct PrivacyDashboard: View {
     }
 }
 
-// MARK: - Privacy Policy View
-
-struct PrivacyPolicyView: View {
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Privacy Policy")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                        
-                        Text("Effective Date: \(Date().formatted(date: .abbreviated, time: .omitted))")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Text("Menuly is built with privacy-first principles. This policy explains how we protect your data.")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    // Privacy principles
-                    privacySection(
-                        title: "Our Privacy Principles",
-                        content: """
-                        • Your photos never leave your device
-                        • No personal data is stored permanently
-                        • Minimal data sharing with external services
-                        • Full transparency about data usage
-                        • You control your data at all times
-                        """
-                    )
-                    
-                    privacySection(
-                        title: "Data Collection",
-                        content: """
-                        Menuly processes menu photos locally on your device using Apple's Vision framework. We do not collect or store:
-                        
-                        • Your photos or images
-                        • Restaurant names or locations
-                        • Personal dining preferences
-                        • Usage analytics or tracking data
-                        """
-                    )
-                    
-                    privacySection(
-                        title: "External API Usage",
-                        content: """
-                        For AI-generated dish descriptions, we send only:
-                        • Dish names (e.g., "Grilled Salmon")
-                        • Basic category information
-                        
-                        We never send:
-                        • Photos or images
-                        • Prices or restaurant information
-                        • Personal or location data
-                        """
-                    )
-                    
-                    privacySection(
-                        title: "Data Retention",
-                        content: """
-                        • Session Only: Data cleared when app closes
-                        • Never Store: No persistent storage on device
-                        • API calls are stateless and not logged
-                        • No data backup or cloud storage
-                        """
-                    )
-                    
-                    privacySection(
-                        title: "Your Rights",
-                        content: """
-                        You can always:
-                        • Clear session data instantly
-                        • Change data retention settings
-                        • Use the app completely offline (except for AI visualizations)
-                        • Delete all app data by removing the app
-                        """
-                    )
-                }
-                .padding()
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-    
-    private func privacySection(title: String, content: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.headline)
-                .fontWeight(.semibold)
-            
-            Text(content)
-                .font(.body)
-                .foregroundColor(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-}
 
 // MARK: - Preview
 
@@ -517,11 +408,11 @@ struct PrivacyPolicyView: View {
             .environmentObject({
                 let pipeline = MenuProcessingPipeline()
                 // Add some sample data for preview
-                let sampleOCR = OCRResult(rawText: "Sample", recognizedLines: [], confidence: 0.9, processingTime: 1.0, imageSize: CGSize(width: 100, height: 100))
+                let sampleOCR = OCRResult(recognizedText: [], processingTime: 1.0, overallConfidence: 0.9, imageSize: CGSize(width: 100, height: 100))
                 let sampleDishes = [
-                    Dish(name: "Test Dish", description: "Test", price: "$10", category: .mainCourse, confidence: 0.9)
+                    Dish(name: "Test Dish", description: "Test", price: "$10", category: .mainCourse, extractionConfidence: 0.9)
                 ]
-                pipeline.currentMenu = Menu(ocrResult: sampleOCR, extractedDishes: sampleDishes)
+                pipeline.currentMenu = Menu(dishes: sampleDishes, ocrConfidence: 0.9)
                 return pipeline
             }())
     }

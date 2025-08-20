@@ -7,23 +7,6 @@
 
 import SwiftUI
 
-/// App-wide states for UI coordination
-enum AppState: Equatable {
-    case idle
-    case onboarding
-    case processing
-    case viewing
-    case error(MenulyError)
-    
-    var isProcessing: Bool {
-        switch self {
-        case .processing:
-            return true
-        default:
-            return false
-        }
-    }
-}
 
 /// Navigation destinations for the app
 enum NavigationDestination: Hashable {

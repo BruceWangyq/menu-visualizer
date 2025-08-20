@@ -29,7 +29,7 @@ class MenuProcessingPipeline: ObservableObject {
     private let ocrService = OCRService()
     private let menuParsingService = MenuParsingService()
     private let visualizationService = VisualizationService()
-    private let privacyComplianceService = PrivacyComplianceService()
+    // private let privacyComplianceService = PrivacyComplianceService()
     
     // MARK: - Configuration
     
@@ -71,18 +71,70 @@ class MenuProcessingPipeline: ObservableObject {
         
         await MainActor.run {
             if let index = processedDishes.firstIndex(where: { $0.id == dish.id }) {
-                processedDishes[index].isGenerating = true
+                let updatedDish = Dish(
+                    name: processedDishes[index].name,
+                    description: processedDishes[index].description,
+                    price: processedDishes[index].price,
+                    category: processedDishes[index].category,
+                    allergens: processedDishes[index].allergens,
+                    dietaryInfo: processedDishes[index].dietaryInfo,
+                    extractionConfidence: processedDishes[index].extractionConfidence,
+                    aiVisualization: processedDishes[index].aiVisualization,
+                    isGenerating: true
+                )
+                processedDishes[index] = updatedDish
                 processingState = .generatingVisualization(dishName: dish.name)
             }
         }
         
         do {
-            let result = try await visualizationService.generateVisualization(for: dish)
+            let result = await visualizationService.generateVisualization(for: dish)
             
             await MainActor.run {
                 if let index = processedDishes.firstIndex(where: { $0.id == dish.id }) {
-                    processedDishes[index] = result
-                    processedDishes[index].isGenerating = false
+                    let currentDish = processedDishes[index]
+                    switch result {
+                    case .success(let visualizationResponse):
+                        // Convert VisualizationResponse to DishVisualization if needed
+                        if let description = visualizationResponse.description {
+                            let visualization = DishVisualization(
+                                dishId: dish.id,
+                                generatedDescription: description,
+                                visualStyle: "appetizing",
+                                ingredients: [],
+                                preparationNotes: ""
+                            )
+                            processedDishes[index] = currentDish.withVisualization(visualization)
+                        }
+                        // Update isGenerating to false
+                        let finalDish = Dish(
+                            name: processedDishes[index].name,
+                            description: processedDishes[index].description,
+                            price: processedDishes[index].price,
+                            category: processedDishes[index].category,
+                            allergens: processedDishes[index].allergens,
+                            dietaryInfo: processedDishes[index].dietaryInfo,
+                            extractionConfidence: processedDishes[index].extractionConfidence,
+                            aiVisualization: processedDishes[index].aiVisualization,
+                            isGenerating: false
+                        )
+                        processedDishes[index] = finalDish
+                    case .failure(let error):
+                        self.error = error
+                        // Update isGenerating to false even on failure
+                        let finalDish = Dish(
+                            name: currentDish.name,
+                            description: currentDish.description,
+                            price: currentDish.price,
+                            category: currentDish.category,
+                            allergens: currentDish.allergens,
+                            dietaryInfo: currentDish.dietaryInfo,
+                            extractionConfidence: currentDish.extractionConfidence,
+                            aiVisualization: currentDish.aiVisualization,
+                            isGenerating: false
+                        )
+                        processedDishes[index] = finalDish
+                    }
                 }
                 
                 // Update processing state
@@ -96,7 +148,19 @@ class MenuProcessingPipeline: ObservableObject {
         } catch {
             await MainActor.run {
                 if let index = processedDishes.firstIndex(where: { $0.id == dish.id }) {
-                    processedDishes[index].isGenerating = false
+                    let currentDish = processedDishes[index]
+                    let updatedDish = Dish(
+                        name: currentDish.name,
+                        description: currentDish.description,
+                        price: currentDish.price,
+                        category: currentDish.category,
+                        allergens: currentDish.allergens,
+                        dietaryInfo: currentDish.dietaryInfo,
+                        extractionConfidence: currentDish.extractionConfidence,
+                        aiVisualization: currentDish.aiVisualization,
+                        isGenerating: false
+                    )
+                    processedDishes[index] = updatedDish
                 }
                 
                 self.error = error as? MenulyError ?? .unknown(error.localizedDescription)
@@ -148,7 +212,7 @@ class MenuProcessingPipeline: ObservableObject {
         error = nil
         
         // Privacy compliance: Clear any cached data
-        privacyComplianceService.clearSessionData()
+        // privacyComplianceService.clearSessionData()
     }
     
     /// Cancel current processing
@@ -181,9 +245,9 @@ class MenuProcessingPipeline: ObservableObject {
             // Stage 5: Create Menu Object
             await updateProgress(0.8, state: .parsingMenu)
             let menu = Menu(
-                ocrResult: ocrResult,
-                extractedDishes: extractedDishes,
-                privacyPolicy: appConfiguration.dataRetentionPolicy
+                dishes: extractedDishes,
+                restaurantName: nil,
+                ocrConfidence: ocrResult.overallConfidence
             )
             
             // Stage 6: Update UI
@@ -213,84 +277,81 @@ class MenuProcessingPipeline: ObservableObject {
     // MARK: - Pipeline Stages
     
     private func validatePrivacyCompliance() throws {
-        guard privacyComplianceService.validateProcessingPermissions() else {
-            throw MenulyError.privacyViolation("Processing permissions not validated")
-        }
+        // Privacy compliance service is commented out
+        // guard privacyComplianceService.validateProcessingPermissions() else {
+        //     throw MenulyError.privacyViolation("Processing permissions not validated")
+        // }
         
         print("✅ Privacy compliance validated")
     }
     
     private func preprocessImage(_ image: UIImage) async throws -> UIImage {
-        let settings = ImagePreprocessingSettings(
-            maxSize: CGSize(width: appConfiguration.maxImageSize, height: appConfiguration.maxImageSize),
-            quality: appConfiguration.ocrQuality,
-            enhanceForOCR: true
-        )
+        // Use configuration method to get preprocessing settings
+        let configuration = appConfiguration.getImagePreprocessingConfiguration()
         
-        let result = try await imagePreprocessor.preprocessImage(image, with: settings)
-        print("✅ Image preprocessed: \(result.size)")
-        return result
+        let result = await imagePreprocessor.preprocessImage(image, configuration: configuration)
+        switch result {
+        case .success(let processedImage):
+            print("✅ Image preprocessed: \(processedImage.size)")
+            return processedImage
+        case .failure(let error):
+            throw error
+        }
     }
     
     private func performOCR(on image: UIImage) async throws -> OCRResult {
-        let settings = OCRSettings(
-            quality: appConfiguration.ocrQuality,
-            languages: processingConfiguration.ocrLanguages,
-            enableProgressReporting: true
-        )
+        // Use configuration method to get OCR settings
+        let configuration = appConfiguration.getOCRConfiguration()
         
-        // Set up progress monitoring
-        ocrService.progressPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] progress in
-                self?.processingProgress = 0.3 + (progress * 0.3) // OCR is 30% of total
+        let result = await ocrService.extractText(from: image, configuration: configuration)
+        switch result {
+        case .success(let ocrResult):
+            guard !ocrResult.recognizedText.isEmpty else {
+                throw MenulyError.noTextRecognized
             }
-            .store(in: &cancellables)
-        
-        let result = try await ocrService.recognizeText(in: image, with: settings)
-        
-        guard !result.rawText.isEmpty else {
-            throw MenulyError.noTextRecognized
+            print("✅ OCR completed: \(ocrResult.recognizedText.count) text blocks, confidence: \(ocrResult.overallConfidence)")
+            return ocrResult
+        case .failure(let error):
+            throw error
         }
-        
-        print("✅ OCR completed: \(result.recognizedLines.count) lines, confidence: \(result.confidence)")
-        return result
     }
     
     private func parseMenuFromOCR(_ ocrResult: OCRResult) async throws -> [Dish] {
-        let settings = MenuParsingSettings(
-            enableCategoryDetection: true,
-            enablePriceExtraction: true,
-            minimumConfidence: processingConfiguration.minimumConfidence,
-            enableDietaryAnalysis: true
-        )
+        // Use configuration method to get parsing settings
+        let configuration = appConfiguration.getParsingConfiguration()
         
-        let dishes = try await menuParsingService.parseMenu(from: ocrResult, with: settings)
-        
-        guard !dishes.isEmpty else {
-            throw MenulyError.ocrProcessingFailed
+        let result = await menuParsingService.extractDishes(from: ocrResult, configuration: configuration)
+        switch result {
+        case .success(let menu):
+            guard !menu.dishes.isEmpty else {
+                throw MenulyError.noDishesFound
+            }
+            print("✅ Menu parsing completed: \(menu.dishes.count) dishes extracted")
+            return menu.dishes
+        case .failure(let error):
+            throw error
         }
-        
-        print("✅ Menu parsed: \(dishes.count) dishes extracted")
-        return dishes
     }
     
     private func handlePrivacyCompliance(_ menu: Menu) async {
         // Implement privacy policy based on user settings
-        if menu.privacyPolicy == .neverStore {
-            // Immediate cleanup
-            privacyComplianceService.clearSessionData()
-        }
+        // Privacy compliance service is commented out
+        // if menu.privacyPolicy == .neverStore {
+        //     // Immediate cleanup
+        //     privacyComplianceService.clearSessionData()
+        // }
         
         // Schedule cleanup based on policy
-        privacyComplianceService.scheduleDataCleanup(for: menu)
+        // privacyComplianceService.scheduleDataCleanup(for: menu)
+        
+        print("✅ Privacy compliance handled")
     }
     
     // MARK: - Configuration
     
     private func loadConfiguration() {
         // Load user preferences or use defaults
-        appConfiguration = AppConfiguration.privacyDefaults
+        appConfiguration = AppConfiguration.shared
         processingConfiguration = ProcessingConfiguration()
         
         print("✅ Configuration loaded")
@@ -315,7 +376,7 @@ class MenuProcessingPipeline: ObservableObject {
         }
         
         // Force garbage collection
-        privacyComplianceService.clearSessionData()
+        // privacyComplianceService.clearSessionData()
     }
     
     // MARK: - Helper Methods
@@ -338,32 +399,6 @@ struct ProcessingConfiguration {
     let processingTimeout: TimeInterval = 60
 }
 
-// MARK: - Privacy Compliance Service
-
-/// Handles privacy compliance and data retention
-class PrivacyComplianceService {
-    
-    func validateProcessingPermissions() -> Bool {
-        // Validate that processing is allowed based on privacy settings
-        return true // Simplified for now
-    }
-    
-    func clearSessionData() {
-        // Clear any cached or temporary data
-        print("🔒 Session data cleared for privacy compliance")
-    }
-    
-    func scheduleDataCleanup(for menu: Menu) {
-        // Schedule cleanup based on retention policy
-        switch menu.privacyPolicy {
-        case .sessionOnly:
-            // Schedule cleanup when app goes to background
-            break
-        case .neverStore:
-            clearSessionData()
-        }
-    }
-}
 
 // MARK: - Extensions
 

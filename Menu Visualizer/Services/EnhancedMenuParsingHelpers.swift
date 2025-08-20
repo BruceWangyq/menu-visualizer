@@ -132,7 +132,7 @@ extension MenuParsingService {
         var cleaned = name
         
         // Remove price patterns
-        for pattern in pricePatterns {
+        for pattern in MenuParsingService.pricePatterns {
             if let regex = try? NSRegularExpression(pattern: pattern) {
                 cleaned = regex.stringByReplacingMatches(
                     in: cleaned,
@@ -163,7 +163,7 @@ extension MenuParsingService {
     }
     
     func containsPrice(_ text: String) -> Bool {
-        for pattern in pricePatterns {
+        for pattern in MenuParsingService.pricePatterns {
             if let regex = try? NSRegularExpression(pattern: pattern) {
                 let range = NSRange(text.startIndex..<text.endIndex, in: text)
                 if regex.firstMatch(in: text, options: [], range: range) != nil {

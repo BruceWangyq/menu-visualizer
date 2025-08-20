@@ -21,7 +21,7 @@ struct ErrorRecoveryView: View {
                 .font(AppTypography.dishNameMedium)
                 .foregroundColor(.charcoalGray)
             
-            Text(error.displayMessage)
+            Text(error.localizedDescription)
                 .font(AppTypography.bodyMedium)
                 .foregroundColor(.midGray)
                 .multilineTextAlignment(.center)
@@ -33,7 +33,7 @@ struct ErrorRecoveryView: View {
                     .font(AppTypography.buttonText)
                     .padding(.horizontal, AppSpacing.xl)
                     .padding(.vertical, AppSpacing.md)
-                    .background(.spiceOrange, in: Capsule())
+                    .background(Color.spiceOrange, in: Capsule())
                     .foregroundColor(.white)
             }
         }

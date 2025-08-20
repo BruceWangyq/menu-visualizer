@@ -33,7 +33,7 @@ struct DishListView: View {
         }
         .navigationTitle("Menu")
         .navigationBarTitleDisplayMode(.large)
-        .toolbar {
+        .toolbar(content: {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     coordinator.navigateBack()
@@ -46,7 +46,7 @@ struct DishListView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                Menu {
+                SwiftUI.Menu {
                     Button {
                         coordinator.navigate(to: .privacyDashboard)
                     } label: {
@@ -72,7 +72,7 @@ struct DishListView: View {
                         .fontWeight(.medium)
                 }
             }
-        }
+        })
         .refreshable {
             // Privacy-compliant refresh - regenerate visualizations only
             await generateMissingVisualizations()
@@ -98,7 +98,7 @@ struct DishListView: View {
                 )
                 
                 statView(
-                    value: "\(Int(menu.ocrResult.confidence * 100))%",
+                    value: "\(Int(menu.ocrResult.overallConfidence * 100))%",
                     label: "Accuracy",
                     icon: "checkmark.circle"
                 )
@@ -269,7 +269,7 @@ struct DishListView: View {
     }
     
     private var availableCategories: [DishCategory] {
-        let categories = Set(menu.extractedDishes.map { $0.category })
+        let categories = Set(menu.extractedDishes.compactMap { $0.category })
         return Array(categories).sorted { $0.rawValue < $1.rawValue }
     }
     
@@ -349,11 +349,19 @@ struct DishRowView: View {
                         HStack(spacing: 8) {
                             // Category badge
                             HStack(spacing: 4) {
-                                Text(dish.category.icon)
-                                    .font(.caption)
-                                Text(dish.category.rawValue)
-                                    .font(.caption)
-                                    .fontWeight(.medium)
+                                if let category = dish.category {
+                                    Text(category.icon)
+                                        .font(.caption)
+                                    Text(category.rawValue)
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                } else {
+                                    Text("❓")
+                                        .font(.caption)
+                                    Text("Unknown")
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                }
                             }
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
@@ -438,7 +446,7 @@ struct DishRowView: View {
                     // Action indicator
                     Image(systemName: "chevron.right")
                         .font(.caption)
-                        .foregroundColor(.tertiary)
+                        .foregroundColor(Color(.tertiaryLabel))
                 }
             }
             .padding()
@@ -464,10 +472,9 @@ struct DishRowView: View {
 
 #Preview {
     let sampleOCRResult = OCRResult(
-        rawText: "Sample menu text",
-        recognizedLines: [],
-        confidence: 0.92,
+        recognizedText: [],
         processingTime: 1.5,
+        overallConfidence: 0.92,
         imageSize: CGSize(width: 800, height: 600)
     )
     
@@ -477,20 +484,20 @@ struct DishRowView: View {
             description: "Fresh Atlantic salmon with lemon herbs",
             price: "$24.99",
             category: .mainCourse,
-            confidence: 0.95
+            extractionConfidence: 0.95
         ),
         Dish(
             name: "Caesar Salad",
             description: "Crisp romaine lettuce with parmesan",
             price: "$14.99",
             category: .salad,
-            confidence: 0.88
+            extractionConfidence: 0.88
         )
     ]
     
     let sampleMenu = Menu(
-        ocrResult: sampleOCRResult,
-        extractedDishes: sampleDishes
+        dishes: sampleDishes,
+        ocrConfidence: 0.92
     )
     
     DishListView(menu: sampleMenu)

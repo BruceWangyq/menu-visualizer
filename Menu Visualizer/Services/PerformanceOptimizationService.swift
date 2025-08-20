@@ -99,18 +99,19 @@ final class PerformanceOptimizationService: ObservableObject {
     private func startMemoryMonitoring() {
         memoryTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
-                self?.updateMemoryUsage()
+                guard let self = self else { return }
+                self.updateMemoryUsage()
             }
         }
     }
     
     private func updateMemoryUsage() {
-        currentMemoryUsage = getCurrentMemoryUsage()
+        self.currentMemoryUsage = self.getCurrentMemoryUsage()
         
         // Check memory pressure
-        if currentMemoryUsage > MemoryThresholds.critical {
-            logger.warning("High memory usage detected: \(currentMemoryUsage / (1024*1024))MB")
-            handleHighMemoryUsage()
+        if self.currentMemoryUsage > MemoryThresholds.critical {
+            self.logger.warning("High memory usage detected: \(self.currentMemoryUsage / (1024*1024))MB")
+            self.handleHighMemoryUsage()
         }
     }
     
@@ -119,7 +120,7 @@ final class PerformanceOptimizationService: ObservableObject {
         var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
         
         let kerr: kern_return_t = withUnsafeMutablePointer(to: &info) {
-            $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
                 task_info(mach_task_self_,
                          task_flavor_t(MACH_TASK_BASIC_INFO),
                          $0,
@@ -207,7 +208,7 @@ final class PerformanceOptimizationService: ObservableObject {
         let processingTime = Date().timeIntervalSince(startTime)
         recordPerformanceSnapshot(operation: "Image Optimization", duration: processingTime)
         
-        logger.debug("Image optimized in \(processingTime)s - size: \(optimizedImage.size)")
+        logger.debug("Image optimized in \(processingTime)s - size: \(optimizedImage.size.width)x\(optimizedImage.size.height)")
         
         return optimizedImage
     }
@@ -288,7 +289,7 @@ final class PerformanceOptimizationService: ObservableObject {
     }
     
     private func getCPUUsage() -> Double {
-        var info = processor_info_array_t.allocate(capacity: 1)
+        var info: processor_info_array_t?
         var numCpuInfo: mach_msg_type_number_t = 0
         var numCpuInfoU: natural_t = 0
         

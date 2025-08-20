@@ -32,13 +32,13 @@ struct PrivacyHealthDetailView: View {
             }
             .navigationTitle("Privacy Health")
             .navigationBarTitleDisplayMode(.large)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
                     }
                 }
-            }
+            })
         }
     }
     
@@ -253,7 +253,7 @@ struct RecommendationRowView: View {
                         
                         Spacer()
                         
-                        Text(recommendation.impact.rawValue.capitalized)
+                        Text(recommendation.impact.description)
                             .font(.caption)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -368,6 +368,17 @@ extension PrivacySettingsRecommendation.ImpactLevel {
             return .orange
         case .high:
             return .red
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .low:
+            return "Low"
+        case .medium:
+            return "Medium"
+        case .high:
+            return "High"
         }
     }
 }

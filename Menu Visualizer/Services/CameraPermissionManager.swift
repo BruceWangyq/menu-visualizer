@@ -193,34 +193,40 @@ final class CameraPermissionManager: ObservableObject {
 
 // MARK: - SwiftUI Integration
 
-extension CameraPermissionManager {
-    /// SwiftUI view modifier for camera permission alerts
-    func permissionAlerts() -> some View {
-        Group {
-            EmptyView()
-                .alert("Camera Permission Required", isPresented: $showingPermissionAlert) {
-                    if permissionDeniedReason?.canOpenSettings == true {
-                        Button("Open Settings") {
-                            openAppSettings()
-                        }
-                    }
-                    Button("Cancel", role: .cancel) {
-                        permissionDeniedReason = nil
-                    }
-                } message: {
-                    Text(permissionDeniedReason?.localizedDescription ?? "Camera access is required to capture menu photos.")
-                }
-                .alert("Camera Access Needed", isPresented: $showingSettingsAlert) {
+/// SwiftUI view modifier for camera permission alerts
+struct CameraPermissionAlertsModifier: ViewModifier {
+    @ObservedObject var permissionManager: CameraPermissionManager
+    
+    func body(content: Content) -> some View {
+        content
+            .alert("Camera Permission Required", isPresented: $permissionManager.showingPermissionAlert) {
+                if permissionManager.permissionDeniedReason?.canOpenSettings == true {
                     Button("Open Settings") {
-                        openAppSettings()
+                        permissionManager.openAppSettings()
                     }
-                    Button("Cancel", role: .cancel) {
-                        permissionDeniedReason = nil
-                    }
-                } message: {
-                    Text("Please enable camera access in Settings to capture menu photos.")
                 }
-        }
+                Button("Cancel", role: .cancel) {
+                    permissionManager.permissionDeniedReason = nil
+                }
+            } message: {
+                Text(permissionManager.permissionDeniedReason?.localizedDescription ?? "Camera access is required to capture menu photos.")
+            }
+            .alert("Camera Access Needed", isPresented: $permissionManager.showingSettingsAlert) {
+                Button("Open Settings") {
+                    permissionManager.openAppSettings()
+                }
+                Button("Cancel", role: .cancel) {
+                    permissionManager.permissionDeniedReason = nil
+                }
+            } message: {
+                Text("Please enable camera access in Settings to capture menu photos.")
+            }
+    }
+}
+
+extension View {
+    func cameraPermissionAlerts(permissionManager: CameraPermissionManager) -> some View {
+        modifier(CameraPermissionAlertsModifier(permissionManager: permissionManager))
     }
 }
 

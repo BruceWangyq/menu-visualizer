@@ -78,7 +78,7 @@ class ClaudeAPIClient {
     /// - Returns: Result with visualization response or error
     func generateVisualization(for dish: DishAPIPayload) async -> Result<VisualizationAPIResponse, MenulyError> {
         // Validate privacy compliance
-        guard dish.isPrivacySafe() else {
+        guard dish.isPrivacySafe else {
             return .failure(.privacyViolation("Dish payload failed privacy validation"))
         }
         
@@ -158,7 +158,7 @@ class ClaudeAPIClient {
                 apiKey: apiKey
             )
         } catch {
-            return .failure(.jsonParsingError)
+            return .failure(.jsonParsingError("Failed to parse JSON response"))
         }
     }
     
@@ -216,7 +216,7 @@ class ClaudeAPIClient {
         // Parse JSON response
         do {
             guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                return .failure(.jsonParsingError)
+                return .failure(.jsonParsingError("Failed to parse JSON response"))
             }
             
             // Handle API errors
@@ -227,7 +227,7 @@ class ClaudeAPIClient {
             
             // Extract content from Claude response
             guard let content = extractContentFromResponse(jsonObject) else {
-                return .failure(.jsonParsingError)
+                return .failure(.jsonParsingError("Failed to parse JSON response"))
             }
             
             // Parse visualization data
@@ -246,7 +246,7 @@ class ClaudeAPIClient {
             }
             
         } catch {
-            return .failure(.jsonParsingError)
+            return .failure(.jsonParsingError("Failed to parse JSON response"))
         }
     }
     
@@ -274,7 +274,7 @@ class ClaudeAPIClient {
         do {
             guard let jsonData = jsonContent.data(using: .utf8),
                   let visualization = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
-                return .failure(.jsonParsingError)
+                return .failure(.jsonParsingError("Failed to parse JSON response"))
             }
             
             // Extract required fields
@@ -282,7 +282,7 @@ class ClaudeAPIClient {
                   let visualStyle = visualization["visualStyle"] as? String,
                   let ingredients = visualization["ingredients"] as? [String],
                   let preparationNotes = visualization["preparationNotes"] as? String else {
-                return .failure(.jsonParsingError)
+                return .failure(.jsonParsingError("Failed to parse JSON response"))
             }
             
             // Validate content safety
@@ -300,7 +300,7 @@ class ClaudeAPIClient {
             return .success(visualizationData)
             
         } catch {
-            return .failure(.jsonParsingError)
+            return .failure(.jsonParsingError("Failed to parse JSON response"))
         }
     }
     

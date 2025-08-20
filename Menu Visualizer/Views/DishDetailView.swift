@@ -38,11 +38,11 @@ struct DishDetailView: View {
         }
         .navigationTitle(dish.name)
         .navigationBarTitleDisplayMode(.large)
-        .toolbar {
+        .toolbar(content: {
             ToolbarItem(placement: .topBarTrailing) {
                 shareButton
             }
-        }
+        })
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(activityItems: [shareText])
         }
@@ -63,9 +63,9 @@ struct DishDetailView: View {
                     HStack(spacing: 12) {
                         // Category badge
                         HStack(spacing: 6) {
-                            Text(dish.category.icon)
+                            Text(dish.category?.icon ?? "🍽️")
                                 .font(.title3)
-                            Text(dish.category.rawValue)
+                            Text(dish.category?.rawValue ?? "Unknown")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                         }
@@ -170,7 +170,7 @@ struct DishDetailView: View {
                                             .fontWeight(.medium)
                                             .padding(.horizontal, AppSpacing.chipPadding)
                                             .padding(.vertical, AppSpacing.xs)
-                                            .background(.lightGray.opacity(0.3), in: Capsule())
+                                            .background(Color.lightGray.opacity(0.3), in: Capsule())
                                             .foregroundColor(.midGray)
                                     }
                                 }
@@ -197,7 +197,7 @@ struct DishDetailView: View {
                                 .fontWeight(.medium)
                                 .padding(.horizontal, AppSpacing.md)
                                 .padding(.vertical, AppSpacing.xs)
-                                .background(.warmGray.opacity(0.2), in: Capsule())
+                                .background(Color.warmGray.opacity(0.2), in: Capsule())
                                 .foregroundColor(.warmGray)
                             }
                             .disabled(isGeneratingVisualization)
@@ -333,7 +333,7 @@ struct DishDetailView: View {
                 .fontWeight(.semibold)
             
             VStack(spacing: 12) {
-                detailRow(label: "Category", value: dish.category.rawValue, icon: "tag")
+                detailRow(label: "Category", value: dish.category?.rawValue ?? "Unknown", icon: "tag")
                 
                 if let price = dish.price {
                     detailRow(label: "Price", value: price, icon: "dollarsign.circle")
@@ -512,14 +512,13 @@ struct ShareSheet: UIViewControllerRepresentable {
         preparationNotes: "Grilled over medium-high heat for 6-8 minutes per side. The skin should be crispy and the flesh should flake easily with a fork."
     )
     
-    var sampleDish = Dish(
+    let sampleDish = Dish(
         name: "Grilled Salmon",
         description: "Fresh Atlantic salmon with lemon herbs",
         price: "$24.99",
         category: .seafood,
-        confidence: 0.95
-    )
-    sampleDish.aiVisualization = sampleVisualization
+        extractionConfidence: 0.95
+    ).withVisualization(sampleVisualization)
     
     NavigationView {
         DishDetailView(dish: sampleDish)

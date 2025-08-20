@@ -41,7 +41,7 @@ struct CameraView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: CameraViewController, context: Context) {
         // Update camera session if needed
         if permissionManager.authorizationStatus == .authorized {
-            Task { @MainActor in
+            Task {
                 await context.coordinator.setupCamera(for: uiViewController)
             }
         }
@@ -60,27 +60,32 @@ struct CameraView: UIViewControllerRepresentable {
             self.parent = parent
         }
         
+        @MainActor
         func setupCamera(for viewController: CameraViewController? = nil) async {
-            let result = parent.cameraService.setupCaptureSession()
+            // CRITICAL FIX: Move session setup to background queue
+            let result = await withCheckedContinuation { continuation in
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let setupResult = self.parent.cameraService.setupCaptureSession()
+                    continuation.resume(returning: setupResult)
+                }
+            }
             
             switch result {
             case .success(let session):
                 if let vc = viewController {
-                    await MainActor.run {
-                        vc.setCaptureSession(session)
-                    }
+                    vc.setCaptureSession(session)
                 }
                 parent.cameraService.startSession()
             case .failure(let error):
-                await MainActor.run {
-                    parent.onError(error)
-                }
+                parent.onError(error)
             }
         }
         
         func didTapToFocus(at point: CGPoint) {
-            parent.cameraService.setFocusPoint(point)
-            parent.onFocusTap?(point)
+            Task { @MainActor in
+                parent.cameraService.setFocusPoint(point)
+                parent.onFocusTap?(point)
+            }
         }
         
         func didCapturePhoto(_ image: UIImage) {
