@@ -263,16 +263,9 @@ struct MenuCaptureView: View {
                             await processPhoto(image)
                         }
                     } label: {
-                        VStack(spacing: 8) {
-                            Image(systemName: "text.viewfinder")
-                                .font(.title2)
-                            Text("Process")
-                                .font(.caption)
-                        }
-                        .foregroundColor(.white)
-                        .frame(width: 120, height: 60)
-                        .background(.blue, in: RoundedRectangle(cornerRadius: 12))
+                        ProcessingButtonLabel(isProcessing: viewModel.isProcessing)
                     }
+                    .disabled(viewModel.isProcessing)
                     
                     Button {
                         sharePhoto(image)
@@ -484,9 +477,95 @@ enum CameraState {
     case error
 }
 
+// MARK: - Supporting Views
+
+struct ProcessingButtonLabel: View {
+    let isProcessing: Bool
+    @State private var rotationAngle: Double = 0
+    @State private var pulseScale: Double = 1.0
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            ZStack {
+                if isProcessing {
+                    // Loading animation with rotating dots
+                    HStack(spacing: 4) {
+                        ForEach(0..<3, id: \.self) { index in
+                            Circle()
+                                .fill(.white)
+                                .frame(width: 4, height: 4)
+                                .scaleEffect(pulseScale)
+                                .animation(
+                                    .easeInOut(duration: 0.6)
+                                    .repeatForever()
+                                    .delay(Double(index) * 0.2),
+                                    value: pulseScale
+                                )
+                        }
+                    }
+                    .onAppear {
+                        pulseScale = 0.5
+                    }
+                } else {
+                    Image(systemName: "text.viewfinder")
+                        .font(.title2)
+                }
+            }
+            
+            Text(isProcessing ? "Processing..." : "Process")
+                .font(.caption)
+                .fontWeight(isProcessing ? .medium : .regular)
+        }
+        .foregroundColor(.white)
+        .frame(width: 120, height: 60)
+        .background(
+            isProcessing ? 
+                LinearGradient(
+                    colors: [.blue.opacity(0.8), .blue],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                ) :
+                LinearGradient(
+                    colors: [.blue, .blue],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                ),
+            in: RoundedRectangle(cornerRadius: 12)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(
+                    isProcessing ? 
+                        LinearGradient(
+                            colors: [.white.opacity(0.3), .clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ) :
+                        LinearGradient(
+                            colors: [.clear, .clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                    lineWidth: 1
+                )
+        )
+        .scaleEffect(isProcessing ? 0.98 : 1.0)
+        .animation(.easeInOut(duration: 0.2), value: isProcessing)
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
     MenuCaptureView()
         .environmentObject(AppCoordinator.preview)
+}
+
+#Preview("Processing Button States") {
+    VStack(spacing: 20) {
+        ProcessingButtonLabel(isProcessing: false)
+        ProcessingButtonLabel(isProcessing: true)
+    }
+    .padding()
+    .background(.black)
 }
