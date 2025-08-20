@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 
+    TEMPLATE: Replace this with your actual GoogleService-Info.plist from Firebase Console
+    
+    To get your GoogleService-Info.plist:
+    1. Go to https://console.firebase.google.com
+    2. Create a new project or select existing project
+    3. Add iOS app with bundle ID: com.yourcompany.Menu-Visualizer
+    4. Download GoogleService-Info.plist
+    5. Replace this template file with the downloaded file
+    6. Rename to GoogleService-Info.plist (remove -Template)
+    
+    The file should contain keys like:
+    - API_KEY
+    - GCM_SENDER_ID
+    - PLIST_VERSION
+    - BUNDLE_ID
+    - PROJECT_ID
+    - STORAGE_BUCKET
+    - IS_ADS_ENABLED
+    - IS_ANALYTICS_ENABLED
+    - IS_APPINVITE_ENABLED
+    - IS_GCM_ENABLED
+    - IS_SIGNIN_ENABLED
+    - GOOGLE_APP_ID
+    -->
+    <key>TEMPLATE_NOTE</key>
+    <string>Replace this file with your actual GoogleService-Info.plist from Firebase Console</string>
+</dict>
+</plist>

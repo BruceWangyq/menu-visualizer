@@ -19,7 +19,9 @@ class APIKeyManager {
     private enum KeychainKeys {
         static let service = "com.menuly.api-keys"
         static let claudeAPIKey = "claude-api-key"
+        static let geminiAPIKey = "gemini-api-key"
         static let keyValidationHash = "claude-key-validation"
+        static let geminiValidationHash = "gemini-key-validation"
     }
     
     private enum SecurityConstants {
@@ -191,6 +193,161 @@ class APIKeyManager {
         }.resume()
     }
     
+    // MARK: - Gemini API Key Management
+    
+    /// Securely store Gemini API key in Keychain
+    /// - Parameter apiKey: The Gemini API key to store
+    /// - Returns: Result indicating success or failure
+    func storeGeminiAPIKey(_ apiKey: String) -> Result<Void, MenulyError> {
+        // Validate API key format
+        guard validateGeminiAPIKeyFormat(apiKey) else {
+            return .failure(.apiError("Invalid Gemini API key format"))
+        }
+        
+        // Remove existing key first
+        let _ = removeGeminiAPIKey()
+        
+        // Prepare keychain query for storing
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: KeychainKeys.service,
+            kSecAttrAccount as String: KeychainKeys.geminiAPIKey,
+            kSecValueData as String: apiKey.data(using: .utf8)!,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        ]
+        
+        // Add access group if specified (for app groups)
+        if let accessGroup = SecurityConstants.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+        
+        // Store in keychain
+        let status = SecItemAdd(query as CFDictionary, nil)
+        
+        if status == errSecSuccess {
+            // Store validation hash for integrity checking
+            let _ = storeGeminiValidationHash(for: apiKey)
+            return .success(())
+        } else {
+            return .failure(.apiError("Failed to store Gemini API key: \(status)"))
+        }
+    }
+    
+    /// Retrieve Gemini API key from Keychain
+    /// - Returns: The stored API key or nil if not found/invalid
+    func retrieveGeminiAPIKey() -> String? {
+        // Prepare keychain query for retrieval
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: KeychainKeys.service,
+            kSecAttrAccount as String: KeychainKeys.geminiAPIKey,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        // Add access group if specified
+        if let accessGroup = SecurityConstants.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+        
+        var dataTypeRef: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
+        
+        guard status == errSecSuccess,
+              let data = dataTypeRef as? Data,
+              let apiKey = String(data: data, encoding: .utf8) else {
+            return nil
+        }
+        
+        // Validate retrieved key integrity
+        guard validateStoredGeminiKeyIntegrity(apiKey) else {
+            // Key may be compromised, remove it
+            let _ = removeGeminiAPIKey()
+            return nil
+        }
+        
+        return apiKey
+    }
+    
+    /// Get Gemini API key with fallback to environment/bundle
+    /// - Returns: The API key from keychain, environment, or bundle
+    /// - Note: With Firebase AI Logic, API keys are managed through Firebase project configuration
+    func getGeminiAPIKey() -> String {
+        // Try keychain first (for backward compatibility)
+        if let storedKey = retrieveGeminiAPIKey() {
+            return storedKey
+        }
+        
+        // Fallback to environment variable
+        if let envKey = ProcessInfo.processInfo.environment["GEMINI_API_KEY"], !envKey.isEmpty {
+            return envKey
+        }
+        
+        // Fallback to bundle Info.plist
+        if let bundleKey = Bundle.main.object(forInfoDictionaryKey: "GEMINI_API_KEY") as? String, !bundleKey.isEmpty {
+            return bundleKey
+        }
+        
+        // With Firebase AI Logic, authentication is handled through Firebase project config
+        // Return empty string to indicate Firebase-managed authentication
+        return ""
+    }
+    
+    /// Check if Firebase AI Logic is properly configured
+    /// - Returns: True if Firebase is configured and ready for AI Logic
+    func isFirebaseAIConfigured() -> Bool {
+        // Check if Firebase is configured
+        guard let _ = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") else {
+            return false
+        }
+        
+        // Additional Firebase configuration checks could be added here
+        return true
+    }
+    
+    /// Get authentication status for AI services
+    /// - Returns: Dictionary with authentication status for different services
+    func getAIServiceAuthStatus() -> [String: Any] {
+        return [
+            "firebaseConfigured": isFirebaseAIConfigured(),
+            "geminiKeyStored": hasValidGeminiAPIKey(),
+            "claudeKeyStored": hasValidAPIKey(),
+            "preferredService": isFirebaseAIConfigured() ? "firebase" : "direct"
+        ]
+    }
+    
+    /// Remove Gemini API key from Keychain
+    /// - Returns: Result indicating success or failure
+    func removeGeminiAPIKey() -> Result<Void, MenulyError> {
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: KeychainKeys.service,
+            kSecAttrAccount as String: KeychainKeys.geminiAPIKey
+        ]
+        
+        if let accessGroup = SecurityConstants.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+        
+        let status = SecItemDelete(query as CFDictionary)
+        
+        // Also remove validation hash
+        let _ = removeGeminiValidationHash()
+        
+        if status == errSecSuccess || status == errSecItemNotFound {
+            return .success(())
+        } else {
+            return .failure(.apiError("Failed to remove Gemini API key: \(status)"))
+        }
+    }
+    
+    /// Check if Gemini API key is stored and valid
+    /// - Returns: True if valid API key exists
+    func hasValidGeminiAPIKey() -> Bool {
+        let apiKey = getGeminiAPIKey()
+        return !apiKey.isEmpty && validateGeminiAPIKeyFormat(apiKey)
+    }
+    
     // MARK: - Private Validation Methods
     
     /// Validate API key format for Claude API
@@ -206,6 +363,24 @@ class APIKeyManager {
         
         // Check for basic format patterns
         let pattern = "^sk-[a-zA-Z0-9_-]+$"
+        let regex = try? NSRegularExpression(pattern: pattern)
+        let range = NSRange(location: 0, length: apiKey.utf16.count)
+        
+        return regex?.firstMatch(in: apiKey, options: [], range: range) != nil
+    }
+    
+    /// Validate API key format for Gemini API
+    /// - Parameter apiKey: The API key to validate
+    /// - Returns: True if format is valid
+    private func validateGeminiAPIKeyFormat(_ apiKey: String) -> Bool {
+        // Gemini API keys typically have specific patterns
+        guard apiKey.count >= 20, // Minimum reasonable length
+              apiKey.count <= SecurityConstants.keyMaxLength else {
+            return false
+        }
+        
+        // Basic character set validation (alphanumeric + some symbols)
+        let pattern = "^[a-zA-Z0-9_-]+$"
         let regex = try? NSRegularExpression(pattern: pattern)
         let range = NSRange(location: 0, length: apiKey.utf16.count)
         
@@ -285,11 +460,94 @@ class APIKeyManager {
         return storedHash == currentHash
     }
     
+    /// Store validation hash for Gemini API key integrity checking
+    /// - Parameter apiKey: The API key to create hash for
+    /// - Returns: Result indicating success or failure
+    private func storeGeminiValidationHash(for apiKey: String) -> Result<Void, MenulyError> {
+        let hash = createGeminiValidationHash(for: apiKey)
+        
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: KeychainKeys.service,
+            kSecAttrAccount as String: KeychainKeys.geminiValidationHash,
+            kSecValueData as String: hash.data(using: .utf8)!,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        ]
+        
+        if let accessGroup = SecurityConstants.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+        
+        // Remove existing hash first
+        let _ = removeGeminiValidationHash()
+        
+        let status = SecItemAdd(query as CFDictionary, nil)
+        return status == errSecSuccess ? .success(()) : .failure(.apiError("Failed to store Gemini validation hash"))
+    }
+    
+    /// Remove Gemini validation hash from Keychain
+    /// - Returns: Result indicating success or failure
+    private func removeGeminiValidationHash() -> Result<Void, MenulyError> {
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: KeychainKeys.service,
+            kSecAttrAccount as String: KeychainKeys.geminiValidationHash
+        ]
+        
+        if let accessGroup = SecurityConstants.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+        
+        let status = SecItemDelete(query as CFDictionary)
+        return status == errSecSuccess || status == errSecItemNotFound ? .success(()) : .failure(.apiError("Failed to remove Gemini validation hash"))
+    }
+    
+    /// Validate stored Gemini key integrity using hash comparison
+    /// - Parameter apiKey: The API key to validate
+    /// - Returns: True if integrity is confirmed
+    private func validateStoredGeminiKeyIntegrity(_ apiKey: String) -> Bool {
+        // Retrieve stored validation hash
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: KeychainKeys.service,
+            kSecAttrAccount as String: KeychainKeys.geminiValidationHash,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        if let accessGroup = SecurityConstants.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+        
+        var dataTypeRef: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
+        
+        guard status == errSecSuccess,
+              let data = dataTypeRef as? Data,
+              let storedHash = String(data: data, encoding: .utf8) else {
+            return false
+        }
+        
+        // Compare with current hash
+        let currentHash = createGeminiValidationHash(for: apiKey)
+        return storedHash == currentHash
+    }
+    
     /// Create validation hash for API key integrity checking
     /// - Parameter apiKey: The API key to hash
     /// - Returns: SHA256 hash string
     private func createValidationHash(for apiKey: String) -> String {
         let input = apiKey + SecurityConstants.validationSalt
+        let inputData = Data(input.utf8)
+        let hashed = SHA256.hash(data: inputData)
+        return hashed.compactMap { String(format: "%02x", $0) }.joined()
+    }
+    
+    /// Create validation hash for Gemini API key integrity checking
+    /// - Parameter apiKey: The API key to hash
+    /// - Returns: SHA256 hash string
+    private func createGeminiValidationHash(for apiKey: String) -> String {
+        let input = apiKey + "menuly-gemini-validation-2024"
         let inputData = Data(input.utf8)
         let hashed = SHA256.hash(data: inputData)
         return hashed.compactMap { String(format: "%02x", $0) }.joined()
@@ -300,11 +558,12 @@ class APIKeyManager {
 
 extension APIKeyManager {
     
-    /// Get security status of stored API key
+    /// Get security status of stored API keys
     /// - Returns: Dictionary with security information
     func getSecurityStatus() -> [String: Any] {
         return [
-            "hasAPIKey": hasValidAPIKey(),
+            "hasClaudeAPIKey": hasValidAPIKey(),
+            "hasGeminiAPIKey": hasValidGeminiAPIKey(),
             "keychainAvailable": isKeychainAvailable(),
             "hardwareSecurityAvailable": isHardwareSecurityAvailable(),
             "lastValidated": getLastValidationDate()
@@ -347,11 +606,12 @@ extension APIKeyManager {
 
 extension APIKeyManager {
     
-    /// Privacy-compliant method to check API key status without exposing key
+    /// Privacy-compliant method to check API key status without exposing keys
     /// - Returns: Status information safe for logging/analytics
     func getPrivacyCompliantStatus() -> [String: Any] {
         return [
-            "hasValidKey": hasValidAPIKey(),
+            "hasValidClaudeKey": hasValidAPIKey(),
+            "hasValidGeminiKey": hasValidGeminiAPIKey(),
             "securityLevel": isHardwareSecurityAvailable() ? "hardware" : "software",
             "storageMethod": "keychain"
         ]

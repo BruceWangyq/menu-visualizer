@@ -2,62 +2,55 @@
 //  AppConfiguration.swift
 //  Menu Visualizer
 //
-//  App-wide configuration settings for Menuly
+//  App-wide configuration settings for AI-powered menu analysis
 //
 
 import Foundation
 import SwiftUI
 import Combine
 
-/// Central configuration for app settings and preferences
+/// Central configuration for AI-powered menu analysis settings
 struct AppConfiguration {
     
-    // MARK: - OCR Configuration
+    // MARK: - AI Processing Configuration
     
-    enum OCRQuality: String, CaseIterable, Identifiable, Codable {
+    enum AIProcessingQuality: String, CaseIterable, Identifiable, Codable {
         case fast = "Fast"
         case balanced = "Balanced"
-        case accurate = "Accurate"
-        case maximum = "Maximum"
+        case highQuality = "HighQuality"
         
         var id: String { rawValue }
         
         var description: String {
             switch self {
             case .fast:
-                return "Quick processing, good for previews"
+                return "Quick AI analysis, good for simple menus"
             case .balanced:
-                return "Good balance of speed and accuracy"
-            case .accurate:
-                return "High accuracy, slower processing"
-            case .maximum:
-                return "Maximum accuracy, slowest processing"
+                return "Balanced speed and accuracy"
+            case .highQuality:
+                return "Maximum accuracy with detailed analysis"
             }
         }
         
         var estimatedProcessingTime: String {
             switch self {
             case .fast:
-                return "1-2 seconds"
+                return "3-5 seconds"
             case .balanced:
-                return "2-4 seconds"
-            case .accurate:
-                return "4-6 seconds"
-            case .maximum:
-                return "6-10 seconds"
+                return "5-8 seconds"
+            case .highQuality:
+                return "8-12 seconds"
             }
         }
         
-        var ocrServiceQuality: OCRService.OCRQuality {
+        var aiConfiguration: AIMenuAnalysisService.AnalysisConfiguration {
             switch self {
             case .fast:
                 return .fast
             case .balanced:
-                return .balanced
-            case .accurate:
-                return .accurate
-            case .maximum:
-                return .maximum
+                return .default
+            case .highQuality:
+                return .highQuality
             }
         }
     }
@@ -69,19 +62,11 @@ struct AppConfiguration {
         case quality = "Quality"
         case balanced = "Balanced"
         
-        var ocrQuality: OCRQuality {
+        var aiQuality: AIProcessingQuality {
             switch self {
             case .speed: return .fast
-            case .quality: return .maximum
+            case .quality: return .highQuality
             case .balanced: return .balanced
-            }
-        }
-        
-        var parsingConfiguration: MenuParsingService.ParsingConfiguration {
-            switch self {
-            case .speed: return .fast
-            case .quality: return .comprehensive
-            case .balanced: return .default
             }
         }
     }
@@ -131,11 +116,11 @@ struct AppConfiguration {
     
     static let shared = AppConfiguration()
     
-    // OCR Settings
-    let defaultOCRQuality: OCRQuality = .balanced
+    // AI Processing Settings
+    let defaultAIQuality: AIProcessingQuality = .balanced
     let defaultLanguages: [SupportedLanguage] = [.english]
     let enableMultiLanguageDetection: Bool = true
-    let enableLayoutAnalysis: Bool = true
+    let enableDetailedAnalysis: Bool = true
     let enableAdvancedPricing: Bool = true
     
     // Performance Settings
@@ -145,7 +130,7 @@ struct AppConfiguration {
     let maxConcurrentOperations: Int = 3
     
     // Quality Thresholds
-    let minimumOCRConfidence: Float = 0.3
+    let minimumAIConfidence: Float = 0.7
     let minimumDishConfidence: Float = 0.4
     let imageQualityThreshold: Float = 0.6
     let enableQualityValidation: Bool = true
@@ -164,54 +149,27 @@ struct AppConfiguration {
     
     // Feature Flags
     let enableExperimentalFeatures: Bool = false
-    let enableBetaOCRFeatures: Bool = false
     let enableAdvancedDietaryAnalysis: Bool = true
     let enableRestaurantInfoExtraction: Bool = true
+    let enableFirebaseAI: Bool = true
     
     // MARK: - Dynamic Configuration
     
-    /// Get OCR configuration for current app settings
-    func getOCRConfiguration() -> OCRService.OCRConfiguration {
-        return OCRService.OCRConfiguration(
-            quality: defaultOCRQuality.ocrServiceQuality,
-            languages: defaultLanguages.map { $0.rawValue },
-            enableLayoutAnalysis: enableLayoutAnalysis,
-            enableRegionDetection: true,
-            minimumConfidence: minimumOCRConfidence,
-            maxProcessingTime: getMaxProcessingTime()
-        )
+    /// Get AI configuration for current app settings
+    func getAIConfiguration() -> AIMenuAnalysisService.AnalysisConfiguration {
+        return defaultAIQuality.aiConfiguration
     }
     
-    /// Get parsing configuration for current app settings
-    func getParsingConfiguration() -> MenuParsingService.ParsingConfiguration {
-        return MenuParsingService.ParsingConfiguration(
-            enableAdvancedPricing: enableAdvancedPricing,
-            enableCategoryDetection: true,
-            enableDietaryAnalysis: enableAdvancedDietaryAnalysis,
-            minimumDishConfidence: minimumDishConfidence,
-            mergeSimilarDishes: true,
-            enableLayoutAwareness: enableLayoutAnalysis
-        )
-    }
-    
-    /// Get image preprocessing configuration
-    func getImagePreprocessingConfiguration() -> ImagePreprocessor.ProcessingConfiguration {
-        switch defaultProcessingPriority {
-        case .speed:
-            return .performance
-        case .quality:
-            return .highQuality
-        case .balanced:
-            return .default
-        }
+    /// Get processing configuration based on priority
+    func getProcessingConfiguration(priority: ProcessingPriority) -> AIMenuAnalysisService.AnalysisConfiguration {
+        return priority.aiQuality.aiConfiguration
     }
     
     private func getMaxProcessingTime() -> TimeInterval {
-        switch defaultOCRQuality {
+        switch defaultAIQuality {
         case .fast: return 15.0
         case .balanced: return 30.0
-        case .accurate: return 45.0
-        case .maximum: return 60.0
+        case .highQuality: return 45.0
         }
     }
 }
@@ -222,13 +180,13 @@ struct AppConfiguration {
 class UserPreferences: ObservableObject {
     static let shared = UserPreferences()
     
-    // OCR Preferences
-    @Published var ocrQuality: AppConfiguration.OCRQuality = .balanced
+    // AI Preferences
+    @Published var aiQuality: AppConfiguration.AIProcessingQuality = .balanced
     @Published var selectedLanguages: [AppConfiguration.SupportedLanguage] = [.english]
     @Published var processingPriority: AppConfiguration.ProcessingPriority = .balanced
     
     // Feature Preferences
-    @Published var enableLayoutAnalysis: Bool = true
+    @Published var enableDetailedAnalysis: Bool = true
     @Published var enableAdvancedPricing: Bool = true
     @Published var enableDietaryAnalysis: Bool = true
     @Published var enableAutoLanguageDetection: Bool = true
@@ -246,9 +204,9 @@ class UserPreferences: ObservableObject {
     }
     
     private func loadUserDefaults() {
-        if let data = UserDefaults.standard.data(forKey: "ocrQuality"),
-           let decoded = try? JSONDecoder().decode(AppConfiguration.OCRQuality.self, from: data) {
-            ocrQuality = decoded
+        if let data = UserDefaults.standard.data(forKey: "aiQuality"),
+           let decoded = try? JSONDecoder().decode(AppConfiguration.AIProcessingQuality.self, from: data) {
+            aiQuality = decoded
         }
         if let data = UserDefaults.standard.data(forKey: "selectedLanguages"),
            let decoded = try? JSONDecoder().decode([AppConfiguration.SupportedLanguage].self, from: data) {
@@ -263,7 +221,7 @@ class UserPreferences: ObservableObject {
             dataRetentionPolicy = decoded
         }
         
-        enableLayoutAnalysis = UserDefaults.standard.bool(forKey: "enableLayoutAnalysis")
+        enableDetailedAnalysis = UserDefaults.standard.bool(forKey: "enableDetailedAnalysis")
         enableAdvancedPricing = UserDefaults.standard.bool(forKey: "enableAdvancedPricing")
         enableDietaryAnalysis = UserDefaults.standard.bool(forKey: "enableDietaryAnalysis")
         enableAutoLanguageDetection = UserDefaults.standard.bool(forKey: "enableAutoLanguageDetection")
@@ -273,8 +231,8 @@ class UserPreferences: ObservableObject {
     }
     
     func saveUserDefaults() {
-        if let data = try? JSONEncoder().encode(ocrQuality) {
-            UserDefaults.standard.set(data, forKey: "ocrQuality")
+        if let data = try? JSONEncoder().encode(aiQuality) {
+            UserDefaults.standard.set(data, forKey: "aiQuality")
         }
         if let data = try? JSONEncoder().encode(selectedLanguages) {
             UserDefaults.standard.set(data, forKey: "selectedLanguages")
@@ -286,7 +244,7 @@ class UserPreferences: ObservableObject {
             UserDefaults.standard.set(data, forKey: "dataRetentionPolicy")
         }
         
-        UserDefaults.standard.set(enableLayoutAnalysis, forKey: "enableLayoutAnalysis")
+        UserDefaults.standard.set(enableDetailedAnalysis, forKey: "enableDetailedAnalysis")
         UserDefaults.standard.set(enableAdvancedPricing, forKey: "enableAdvancedPricing")
         UserDefaults.standard.set(enableDietaryAnalysis, forKey: "enableDietaryAnalysis")
         UserDefaults.standard.set(enableAutoLanguageDetection, forKey: "enableAutoLanguageDetection")
@@ -297,28 +255,14 @@ class UserPreferences: ObservableObject {
     
     // MARK: - Configuration Generation
     
-    /// Generate OCR configuration from user preferences
-    func createOCRConfiguration() -> OCRService.OCRConfiguration {
-        return OCRService.OCRConfiguration(
-            quality: ocrQuality.ocrServiceQuality,
-            languages: selectedLanguages.map { $0.rawValue },
-            enableLayoutAnalysis: enableLayoutAnalysis,
-            enableRegionDetection: true,
-            minimumConfidence: AppConfiguration.shared.minimumOCRConfidence,
-            maxProcessingTime: getProcessingTimeout()
-        )
+    /// Generate AI configuration from user preferences
+    func createAIConfiguration() -> AIMenuAnalysisService.AnalysisConfiguration {
+        return aiQuality.aiConfiguration
     }
     
-    /// Generate parsing configuration from user preferences
-    func createParsingConfiguration() -> MenuParsingService.ParsingConfiguration {
-        return MenuParsingService.ParsingConfiguration(
-            enableAdvancedPricing: enableAdvancedPricing,
-            enableCategoryDetection: true,
-            enableDietaryAnalysis: enableDietaryAnalysis,
-            minimumDishConfidence: AppConfiguration.shared.minimumDishConfidence,
-            mergeSimilarDishes: true,
-            enableLayoutAwareness: enableLayoutAnalysis
-        )
+    /// Get processing priority-based AI configuration
+    func getAIConfigurationForPriority() -> AIMenuAnalysisService.AnalysisConfiguration {
+        return processingPriority.aiQuality.aiConfiguration
     }
     
     private func getProcessingTimeout() -> TimeInterval {

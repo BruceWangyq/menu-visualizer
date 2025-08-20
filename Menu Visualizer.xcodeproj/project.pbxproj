@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D8A884A82E56212600AEDBB9 /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = D8A884A72E56212600AEDBB9 /* FirebaseAI */; };
+		D8A884AA2E56212600AEDBB9 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = D8A884A92E56212600AEDBB9 /* FirebaseAnalytics */; };
+		D8A884AC2E56212600AEDBB9 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = D8A884AB2E56212600AEDBB9 /* FirebaseAnalyticsCore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		D8A882232E55126600AEDBB9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +58,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D8A884AA2E56212600AEDBB9 /* FirebaseAnalytics in Frameworks */,
+				D8A884AC2E56212600AEDBB9 /* FirebaseAnalyticsCore in Frameworks */,
+				D8A884A82E56212600AEDBB9 /* FirebaseAI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +121,9 @@
 			);
 			name = "Menu Visualizer";
 			packageProductDependencies = (
+				D8A884A72E56212600AEDBB9 /* FirebaseAI */,
+				D8A884A92E56212600AEDBB9 /* FirebaseAnalytics */,
+				D8A884AB2E56212600AEDBB9 /* FirebaseAnalyticsCore */,
 			);
 			productName = "Menu Visualizer";
 			productReference = D8A882152E55126400AEDBB9 /* Menu Visualizer.app */;
@@ -195,6 +207,10 @@
 			);
 			mainGroup = D8A8820C2E55126400AEDBB9;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D8A8849F2E5617FE00AEDBB9 /* XCRemoteSwiftPackageReference "generative-ai-swift" */,
+				D8A884A42E561D4500AEDBB9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D8A882162E55126400AEDBB9 /* Products */;
 			projectDirPath = "";
@@ -556,6 +572,43 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D8A8849F2E5617FE00AEDBB9 /* XCRemoteSwiftPackageReference "generative-ai-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/generative-ai-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.6;
+			};
+		};
+		D8A884A42E561D4500AEDBB9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D8A884A72E56212600AEDBB9 /* FirebaseAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D8A884A42E561D4500AEDBB9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAI;
+		};
+		D8A884A92E56212600AEDBB9 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D8A884A42E561D4500AEDBB9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		D8A884AB2E56212600AEDBB9 /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D8A884A42E561D4500AEDBB9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D8A8820D2E55126400AEDBB9 /* Project object */;
 }

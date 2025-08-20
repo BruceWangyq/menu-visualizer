@@ -439,6 +439,19 @@ enum MenulyError: LocalizedError, Equatable, Hashable {
     case apiError(String)
     case privacyViolation(String)
     
+    // AI Service Specific Errors
+    case aiServiceUnavailable
+    case aiAnalysisTimeout
+    case aiResponseParsingFailed
+    case aiModelNotFound
+    case aiQuotaExceeded
+    case aiContentFiltered
+    case aiImageOptimizationFailed
+    case aiUnsupportedImageFormat
+    case aiConfidenceTooLow(Float)
+    case aiInvalidPrompt
+    case aiServiceConfigurationError(String)
+    
     // System Errors
     case insufficientMemory
     case processingTimeout
@@ -485,6 +498,31 @@ enum MenulyError: LocalizedError, Equatable, Hashable {
             return "API error: \(message)"
         case .privacyViolation(let message):
             return "Privacy policy violation: \(message)"
+            
+        // AI Service Specific Errors
+        case .aiServiceUnavailable:
+            return "AI menu analysis service is currently unavailable. Please try again later."
+        case .aiAnalysisTimeout:
+            return "AI analysis timed out. Please check your internet connection and try again."
+        case .aiResponseParsingFailed:
+            return "Failed to parse AI analysis results. The response format was unexpected."
+        case .aiModelNotFound:
+            return "AI model is not available. Please update the app or try again later."
+        case .aiQuotaExceeded:
+            return "AI service usage quota exceeded. Please try again later or check your billing."
+        case .aiContentFiltered:
+            return "Menu content was filtered by AI safety systems. Please try a different image."
+        case .aiImageOptimizationFailed:
+            return "Failed to optimize image for AI analysis. Using original image."
+        case .aiUnsupportedImageFormat:
+            return "Image format is not supported by AI analysis. Please use JPEG or PNG."
+        case .aiConfidenceTooLow(let confidence):
+            return "AI confidence too low (\(Int(confidence * 100))%). Please try a clearer image."
+        case .aiInvalidPrompt:
+            return "AI analysis prompt is invalid. Please report this issue."
+        case .aiServiceConfigurationError(let message):
+            return "AI service configuration error: \(message)"
+            
         case .insufficientMemory:
             return "Insufficient memory. Please close other apps and try again"
         case .processingTimeout:

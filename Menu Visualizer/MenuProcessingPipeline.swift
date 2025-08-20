@@ -1,8 +1,8 @@
 //
 //  MenuProcessingPipeline.swift
-//  Menuly
+//  Menu Visualizer
 //
-//  Comprehensive image processing pipeline: photo → OCR → parsing → visualization
+//  Streamlined AI processing pipeline: photo → Gemini AI → visualization
 //
 
 import Foundation
@@ -10,7 +10,7 @@ import UIKit
 import SwiftUI
 import Combine
 
-/// Main orchestrator for the complete menu processing workflow
+/// Main orchestrator for AI-powered menu processing workflow
 @MainActor
 class MenuProcessingPipeline: ObservableObject {
     
@@ -25,9 +25,7 @@ class MenuProcessingPipeline: ObservableObject {
     // MARK: - Services
     
     // Camera service is now accessed through CameraManager.shared
-    private let imagePreprocessor = ImagePreprocessor()
-    private let ocrService = OCRService()
-    private let menuParsingService = MenuParsingService()
+    private let aiService = AIMenuAnalysisService()
     private let visualizationService = VisualizationService()
     // private let privacyComplianceService = PrivacyComplianceService()
     
@@ -50,7 +48,7 @@ class MenuProcessingPipeline: ObservableObject {
     
     // MARK: - Public API
     
-    /// Main entry point: Process a captured menu photo
+    /// Main entry point: Process a captured menu photo with AI
     func processMenuPhoto(_ image: UIImage) async {
         guard processingState != .processingOCR else {
             print("Pipeline already processing - ignoring new request")
@@ -61,7 +59,7 @@ class MenuProcessingPipeline: ObservableObject {
         currentProcessingTask?.cancel()
         
         currentProcessingTask = Task {
-            await executeProcessingPipeline(image)
+            await executeAIProcessingPipeline(image)
         }
     }
     
@@ -224,43 +222,29 @@ class MenuProcessingPipeline: ObservableObject {
     
     // MARK: - Pipeline Implementation
     
-    private func executeProcessingPipeline(_ image: UIImage) async {
+    private func executeAIProcessingPipeline(_ image: UIImage) async {
         do {
             // Stage 1: Privacy Compliance Check
             await updateProgress(0.1, state: .processingOCR)
             try validatePrivacyCompliance()
             
-            // Stage 2: Image Preprocessing
+            // Stage 2: AI Menu Analysis (Gemini)
             await updateProgress(0.2, state: .processingOCR)
-            let preprocessedImage = try await preprocessImage(image)
+            print("🤖 Starting AI menu analysis with Gemini...")
+            let menu = try await performAIAnalysis(on: image)
             
-            // Stage 3: OCR Processing
-            await updateProgress(0.3, state: .processingOCR)
-            let ocrResult = try await performOCR(on: preprocessedImage)
-            
-            // Stage 4: Menu Parsing
-            await updateProgress(0.6, state: .parsingMenu)
-            let extractedDishes = try await parseMenuFromOCR(ocrResult)
-            
-            // Stage 5: Create Menu Object
-            await updateProgress(0.8, state: .parsingMenu)
-            let menu = Menu(
-                dishes: extractedDishes,
-                restaurantName: nil,
-                ocrConfidence: ocrResult.overallConfidence
-            )
-            
-            // Stage 6: Update UI
+            // Stage 3: Update UI
+            await updateProgress(0.9, state: .parsingMenu)
             await MainActor.run {
                 self.currentMenu = menu
-                self.processedDishes = extractedDishes
+                self.processedDishes = menu.dishes
                 self.processingProgress = 1.0
                 self.processingState = .completed
                 
-                print("✅ Menu processing completed: \(extractedDishes.count) dishes found")
+                print("✅ AI menu processing completed: \(menu.dishes.count) dishes found")
             }
             
-            // Stage 7: Privacy Compliance (Optional Auto-Delete)
+            // Stage 4: Privacy Compliance (Optional Auto-Delete)
             await handlePrivacyCompliance(menu)
             
         } catch {
@@ -269,7 +253,7 @@ class MenuProcessingPipeline: ObservableObject {
                 self.error = menulyError
                 self.processingState = .error(menulyError)
                 
-                print("❌ Pipeline failed: \(error)")
+                print("❌ AI pipeline failed: \(error)")
             }
         }
     }
@@ -285,52 +269,26 @@ class MenuProcessingPipeline: ObservableObject {
         print("✅ Privacy compliance validated")
     }
     
-    private func preprocessImage(_ image: UIImage) async throws -> UIImage {
-        // Use configuration method to get preprocessing settings
-        let configuration = appConfiguration.getImagePreprocessingConfiguration()
+    private func performAIAnalysis(on image: UIImage) async throws -> Menu {
+        // Configure AI service for optimal performance
+        let configuration = getAIConfiguration()
         
-        let result = await imagePreprocessor.preprocessImage(image, configuration: configuration)
-        switch result {
-        case .success(let processedImage):
-            print("✅ Image preprocessed: \(processedImage.size)")
-            return processedImage
-        case .failure(let error):
-            throw error
-        }
-    }
-    
-    private func performOCR(on image: UIImage) async throws -> OCRResult {
-        // Use configuration method to get OCR settings
-        let configuration = appConfiguration.getOCRConfiguration()
-        
-        let result = await ocrService.extractText(from: image, configuration: configuration)
-        switch result {
-        case .success(let ocrResult):
-            guard !ocrResult.recognizedText.isEmpty else {
-                throw MenulyError.noTextRecognized
-            }
-            print("✅ OCR completed: \(ocrResult.recognizedText.count) text blocks, confidence: \(ocrResult.overallConfidence)")
-            return ocrResult
-        case .failure(let error):
-            throw error
-        }
-    }
-    
-    private func parseMenuFromOCR(_ ocrResult: OCRResult) async throws -> [Dish] {
-        // Use configuration method to get parsing settings
-        let configuration = appConfiguration.getParsingConfiguration()
-        
-        let result = await menuParsingService.extractDishes(from: ocrResult, configuration: configuration)
+        let result = await aiService.analyzeMenu(from: image, configuration: configuration)
         switch result {
         case .success(let menu):
             guard !menu.dishes.isEmpty else {
                 throw MenulyError.noDishesFound
             }
-            print("✅ Menu parsing completed: \(menu.dishes.count) dishes extracted")
-            return menu.dishes
+            print("✅ AI analysis completed: \(menu.dishes.count) dishes extracted")
+            return menu
         case .failure(let error):
             throw error
         }
+    }
+    
+    private func getAIConfiguration() -> AIMenuAnalysisService.AnalysisConfiguration {
+        // Use high quality configuration for pipeline processing
+        return .highQuality
     }
     
     private func handlePrivacyCompliance(_ menu: Menu) async {
@@ -393,10 +351,10 @@ class MenuProcessingPipeline: ObservableObject {
 
 struct ProcessingConfiguration {
     let maxConcurrentVisualizations: Int = 3
-    let ocrLanguages: [String] = ["en-US", "es-ES", "fr-FR"]
+    let aiProcessingTimeout: TimeInterval = 60
     let minimumConfidence: Float = 0.6
     let enableBatchProcessing: Bool = true
-    let processingTimeout: TimeInterval = 60
+    let useHighQualityAI: Bool = true
 }
 
 

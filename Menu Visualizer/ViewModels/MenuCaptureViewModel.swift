@@ -8,7 +8,6 @@
 import SwiftUI
 import UIKit
 import AVFoundation
-import Vision
 import Combine
 
 // Type alias to avoid conflict with SwiftUI.Menu
@@ -30,23 +29,34 @@ final class MenuCaptureViewModel: ObservableObject {
     // MARK: - Services
     
     // Camera service is now accessed through CameraManager.shared
-    private let ocrService: OCRService
-    private let parsingService: MenuParsingService
+    private let aiService: AIMenuAnalysisService
     var coordinator: AppCoordinator
+    
+    // MARK: - Configuration
+    
+    /// Processing quality for menu analysis
+    enum ProcessingQuality {
+        case fast          // Fast AI analysis with basic optimization
+        case balanced      // Balanced speed and accuracy (default)
+        case highQuality   // Maximum accuracy with detailed analysis
+    }
+    
+    @Published var processingQuality: ProcessingQuality = .balanced
+    @Published var useAIService: Bool = true
     
     // MARK: - Performance Tracking
     
     private var operationStartTime: Date?
-    private var ocrStartTime: Date?
-    private var parsingStartTime: Date?
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
     
     init(coordinator: AppCoordinator) {
         self.coordinator = coordinator
-        self.ocrService = OCRService()
-        self.parsingService = MenuParsingService()
+        self.aiService = AIMenuAnalysisService()
+        
+        // Verify AI service is available
+        self.useAIService = APIKeyManager.shared.isFirebaseAIConfigured() || APIKeyManager.shared.hasValidGeminiAPIKey()
         
         setupBindings()
     }
@@ -54,22 +64,12 @@ final class MenuCaptureViewModel: ObservableObject {
     // MARK: - Setup
     
     private func setupBindings() {
-        // Observe OCR service progress
-        ocrService.$processingProgress
+        // Observe AI service progress
+        aiService.$processingProgress
             .receive(on: DispatchQueue.main)
             .sink { [weak self] progress in
-                if self?.currentState == .processingOCR {
-                    self?.processingProgress = progress * 0.5 // OCR is first half
-                }
-            }
-            .store(in: &cancellables)
-        
-        // Observe parsing service progress
-        parsingService.$processingProgress
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] progress in
-                if self?.currentState == .extractingDishes {
-                    self?.processingProgress = 0.5 + (progress * 0.5) // Parsing is second half
+                if self?.currentState == .processingOCR || self?.currentState == .extractingDishes {
+                    self?.processingProgress = progress
                 }
             }
             .store(in: &cancellables)
@@ -154,62 +154,70 @@ final class MenuCaptureViewModel: ObservableObject {
     // MARK: - Image Processing Pipeline
     
     func processMenuPhoto(_ image: UIImage) async {
-        // Step 1: OCR Processing
-        ocrStartTime = Date()
+        operationStartTime = Date()
+        await processWithAI(image)
+    }
+    
+    // MARK: - AI Processing
+    
+    private func processWithAI(_ image: UIImage) async {
+        guard useAIService else {
+            handleError(.aiServiceConfigurationError("AI service is not configured. Please check your Firebase configuration or API key."))
+            return
+        }
+        
+        print("🤖 Processing menu with Gemini AI...")
         updateState(.processingOCR)
         
-        let ocrResult = await ocrService.extractText(from: image)
+        // Configure AI service based on quality setting
+        let configuration = getAIConfiguration()
+        let aiResult = await aiService.analyzeMenu(from: image, configuration: configuration)
         
-        switch ocrResult {
-        case .success(let result):
-            await processDishExtraction(result)
-            
-        case .failure(let error):
-            handleError(error)
-        }
-    }
-    
-    private func processDishExtraction(_ ocrResult: OCRResult) async {
-        // Step 2: Dish Extraction
-        parsingStartTime = Date()
-        updateState(.extractingDishes)
-        
-        let parsingResult = await parsingService.extractDishes(from: ocrResult)
-        
-        switch parsingResult {
+        switch aiResult {
         case .success(let menu):
-            await completeProcessing(menu, ocrResult)
+            print("✅ AI analysis successful with \(menu.dishes.count) dishes")
+            await completeAIProcessing(menu)
             
         case .failure(let error):
-            handleError(error)
+            print("❌ AI analysis failed: \(error.localizedDescription)")
+            handleError(convertAIError(error))
         }
     }
     
-    private func completeProcessing(_ menu: MenuModel, _ ocrResult: OCRResult) async {
-        // Calculate performance metrics
+    private func getAIConfiguration() -> AIMenuAnalysisService.AnalysisConfiguration {
+        switch processingQuality {
+        case .fast:
+            return .fast
+        case .balanced:
+            return .default
+        case .highQuality:
+            return .highQuality
+        }
+    }
+    
+    private func completeAIProcessing(_ menu: Menu) async {
+        // Calculate performance metrics for AI processing
         let endTime = Date()
         
-        if let operationStart = operationStartTime,
-           let ocrStart = ocrStartTime,
-           let parsingStart = parsingStartTime {
-            
-            let ocrTime = parsingStart.timeIntervalSince(ocrStart)
-            let parsingTime = endTime.timeIntervalSince(parsingStart)
+        if let operationStart = operationStartTime {
             let totalTime = endTime.timeIntervalSince(operationStart)
             
             performanceMetrics = PerformanceMetrics(
-                ocrProcessingTime: ocrTime,
-                dishExtractionTime: parsingTime,
-                apiRequestTime: 0, // Not used in this phase
+                ocrProcessingTime: 0, // Not used in AI pipeline
+                dishExtractionTime: 0, // Not used in AI pipeline
+                apiRequestTime: totalTime, // AI processing time
                 totalProcessingTime: totalTime,
                 memoryUsage: getMemoryUsage(),
-                imageProcessingTime: ocrResult.processingTime
+                imageProcessingTime: totalTime
             )
         }
         
         extractedMenu = menu
         processingProgress = 1.0
         updateState(.displayingResults)
+        
+        print("🎉 Menu analysis completed in \(String(format: "%.2f", performanceMetrics?.totalProcessingTime ?? 0))s")
+        print("📊 Processing quality: \(processingQuality)")
         
         // Navigate to results
         coordinator.navigate(to: .dishList(menu: menu))
@@ -219,6 +227,13 @@ final class MenuCaptureViewModel: ObservableObject {
             self.processingProgress = 0.0
         }
     }
+    
+    private func convertAIError(_ error: MenulyError) -> MenulyError {
+        // AI service now returns specific error types, so we can pass them through directly
+        // This provides better user experience with more specific error messages
+        return error
+    }
+    
     
     // MARK: - State Management
     
@@ -266,9 +281,37 @@ final class MenuCaptureViewModel: ObservableObject {
     }
     
     func cancelCurrentOperation() {
-        ocrService.cancelProcessing()
+        aiService.cancelProcessing()
         processingProgress = 0.0
         updateState(.idle)
+    }
+    
+    // MARK: - AI Service Management
+    
+    /// Update processing quality based on user preference
+    func updateProcessingQuality(_ quality: ProcessingQuality) {
+        processingQuality = quality
+        print("📈 Processing quality updated to: \(quality)")
+    }
+    
+    /// Check if AI service is available and properly configured
+    func validateAIServiceAvailability() -> Bool {
+        return APIKeyManager.shared.isFirebaseAIConfigured() || APIKeyManager.shared.hasValidGeminiAPIKey()
+    }
+    
+    /// Get recommended processing quality based on current conditions
+    func getRecommendedQuality() -> ProcessingQuality {
+        return .balanced // Always recommend balanced for best user experience
+    }
+    
+    /// Estimate processing time based on current quality setting
+    func estimateProcessingTime(for imageSize: CGSize) -> TimeInterval {
+        guard validateAIServiceAvailability() else {
+            return 0 // No processing possible without AI service
+        }
+        
+        let config = getAIConfiguration()
+        return aiService.estimateProcessingTime(for: imageSize, configuration: config)
     }
     
     private func getMemoryUsage() -> UInt64 {
@@ -323,15 +366,45 @@ final class MenuCaptureViewModel: ObservableObject {
         case .capturingPhoto:
             return "Capturing photo..."
         case .processingOCR:
-            return "Reading menu text..."
+            return aiService.currentStage.rawValue
         case .extractingDishes:
-            return "Finding dishes..."
+            return aiService.currentStage.rawValue
         case .displayingResults:
             return "Complete!"
         case .error(let error):
             return error.localizedDescription
         default:
             return ""
+        }
+    }
+    
+    var currentProcessingMethod: String {
+        return "Gemini AI (\(processingQuality.displayName))"
+    }
+}
+
+// MARK: - Processing Quality Extension
+
+extension MenuCaptureViewModel.ProcessingQuality {
+    var displayName: String {
+        switch self {
+        case .fast:
+            return "Fast"
+        case .balanced:
+            return "Balanced"
+        case .highQuality:
+            return "High Quality"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .fast:
+            return "Quick analysis with basic optimization"
+        case .balanced:
+            return "Balanced speed and accuracy"
+        case .highQuality:
+            return "Maximum accuracy with detailed analysis"
         }
     }
 }
