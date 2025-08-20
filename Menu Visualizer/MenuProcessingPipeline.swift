@@ -24,7 +24,7 @@ class MenuProcessingPipeline: ObservableObject {
     
     // MARK: - Services
     
-    private let cameraService = CameraService()
+    // Camera service is now accessed through CameraManager.shared
     private let imagePreprocessor = ImagePreprocessor()
     private let ocrService = OCRService()
     private let menuParsingService = MenuParsingService()

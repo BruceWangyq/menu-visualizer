@@ -6,9 +6,13 @@
 //
 
 import SwiftUI
+import UIKit
 import AVFoundation
 import Vision
 import Combine
+
+// Type alias to avoid conflict with SwiftUI.Menu
+typealias MenuModel = Menu
 
 /// ViewModel managing menu capture workflow with privacy-first approach
 @MainActor
@@ -17,7 +21,7 @@ final class MenuCaptureViewModel: ObservableObject {
     
     @Published var currentState: AppState = .idle
     @Published var capturedImage: UIImage?
-    @Published var extractedMenu: Menu?
+    @Published var extractedMenu: MenuModel?
     @Published var currentError: MenulyError?
     @Published var isShowingCamera = false
     @Published var processingProgress: Double = 0.0
@@ -25,7 +29,7 @@ final class MenuCaptureViewModel: ObservableObject {
     
     // MARK: - Services
     
-    let cameraService: CameraService
+    // Camera service is now accessed through CameraManager.shared
     private let ocrService: OCRService
     private let parsingService: MenuParsingService
     var coordinator: AppCoordinator
@@ -41,7 +45,6 @@ final class MenuCaptureViewModel: ObservableObject {
     
     init(coordinator: AppCoordinator) {
         self.coordinator = coordinator
-        self.cameraService = CameraService()
         self.ocrService = OCRService()
         self.parsingService = MenuParsingService()
         
@@ -75,7 +78,7 @@ final class MenuCaptureViewModel: ObservableObject {
     // MARK: - Camera Actions
     
     func requestCameraPermission() async {
-        let granted = await cameraService.requestCameraPermission()
+        let granted = await CameraManager.shared.requestPermission()
         
         if !granted {
             currentError = .cameraPermissionDenied
@@ -84,20 +87,43 @@ final class MenuCaptureViewModel: ObservableObject {
     }
     
     func startCameraSession() async {
-        guard cameraService.isAuthorized else {
+        guard CameraManager.shared.authorizationStatus == .authorized else {
             await requestCameraPermission()
             return
         }
         
-        let result = cameraService.setupCaptureSession()
+        let success = await CameraManager.shared.configureSession()
         
-        switch result {
-        case .success:
-            cameraService.startSession()
+        if success {
+            CameraManager.shared.startSession()
             isShowingCamera = true
             updateState(.capturingPhoto)
-        case .failure(let error):
-            handleError(error)
+        } else {
+            currentError = .cameraUnavailable
+        }
+    }
+    
+    func setupCamera() async {
+        print("🎬 Setting up camera in ViewModel")
+        
+        let cameraManager = CameraManager.shared
+        
+        guard cameraManager.authorizationStatus == .authorized else {
+            print("❌ Not authorized for camera")
+            currentError = .cameraPermissionDenied
+            return
+        }
+        
+        let success = await cameraManager.configureSession()
+        
+        if success {
+            print("✅ Camera session setup successful")
+            cameraManager.startSession()
+            isShowingCamera = true
+            updateState(.capturingPhoto)
+        } else {
+            print("❌ Camera session setup failed")
+            handleError(.cameraUnavailable)
         }
     }
     
@@ -109,17 +135,19 @@ final class MenuCaptureViewModel: ObservableObject {
         operationStartTime = Date()
         updateState(.capturingPhoto)
         
-        let result = await cameraService.capturePhoto()
+        // Use CameraManager for photo capture
+        let cameraManager = CameraManager.shared
+        let result = await cameraManager.capturePhoto()
         
         switch result {
         case .success(let image):
+            print("✅ Photo captured successfully")
             capturedImage = image
             isShowingCamera = false
             await processMenuPhoto(image)
-            
         case .failure(let error):
-            isShowingCamera = false
-            handleError(error)
+            print("❌ Photo capture failed: \(error)")
+            handleError(.photoCaptureFailed)
         }
     }
     
@@ -157,7 +185,7 @@ final class MenuCaptureViewModel: ObservableObject {
         }
     }
     
-    private func completeProcessing(_ menu: Menu, _ ocrResult: OCRResult) async {
+    private func completeProcessing(_ menu: MenuModel, _ ocrResult: OCRResult) async {
         // Calculate performance metrics
         let endTime = Date()
         
@@ -234,7 +262,7 @@ final class MenuCaptureViewModel: ObservableObject {
         updateState(.idle)
         
         // Clear camera service
-        cameraService.clearCapturedImage()
+        CameraManager.shared.capturedImage = nil
     }
     
     func cancelCurrentOperation() {
@@ -268,7 +296,7 @@ final class MenuCaptureViewModel: ObservableObject {
     func clearAllData() {
         resetCapture()
         
-        cameraService.stopSession()
+        CameraManager.shared.stopSession()
         
         // Clear any cached data in services
         // Note: Services are designed to not persist data beyond session
@@ -286,9 +314,8 @@ final class MenuCaptureViewModel: ObservableObject {
     }
     
     var canCapture: Bool {
-        return cameraService.isAuthorized && 
-               cameraService.isCameraAvailable && 
-               !isProcessing
+        let cameraManager = CameraManager.shared
+        return cameraManager.authorizationStatus == .authorized && !isProcessing
     }
     
     var processingStatusText: String {
